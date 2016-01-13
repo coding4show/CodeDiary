@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <script type="text/javascript">
+        function Start() 
+	    {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", "./TestElementContentInclude.txt", true);
+            xmlHttp.send(null);
+            
+            
+            
+            /*
+            var elem = document.getElementById("shader-fs");
+            document.body.innerText = elem.textContent;
+            */
+        }
+    </script>
+ </head>
+<body onload="Start();">
+    Hello, World!
+</body>
+</html>
