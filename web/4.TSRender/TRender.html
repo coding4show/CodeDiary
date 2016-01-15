@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script type="text/javascript" src="FileLoader.js"></script>
+	<script type="text/javascript">
+		function WebStart(){
+			alert("WebStart");
+
+			var fileLoader = new FileLoader();
+			fileLoader.Load("diff.vs", function(text){
+				//document.body.innerText = text;
+			});
+
+			var canvas = document.getElementById("c");
+			alert(typeof(canvas));
+		}
+
+		
+
+	</script>
+</head>
+
+<body onload="WebStart();">
+	<canvas width="400" height="400" id="c"></canvas>
+</body>
+
+</html>
