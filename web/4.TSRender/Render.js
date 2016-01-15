@@ -31,6 +31,9 @@ var Context = (function () {
             this.gl = this.canvas.getContext("experimental-webgl");
             this.gl.viewportWidth = this.canvas.width;
             this.gl.viewportHeight = this.canvas.height;
+            this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         }
         catch (e) { }
         if (!this.gl) {
@@ -73,7 +76,9 @@ var Context = (function () {
         this.gl.linkProgram(shaderProgram);
         if (!this.gl.getProgramParameter(shaderProgram, this.gl.LINK_STATUS)) {
             alert("Could not initialise shaders");
+            return null;
         }
+        return shaderProgram;
     };
     return Context;
 })();

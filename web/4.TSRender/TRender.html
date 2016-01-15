@@ -2,7 +2,7 @@
 <html>
 
 <head>
-	<script type="text/javascript" src="FileLoader.js"></script>
+	<script type="text/javascript" src="Render.js"></script>
 	<script type="text/javascript">
 		function WebStart(){
 			alert("WebStart");
@@ -13,7 +13,8 @@
 			});
 
 			var canvas = document.getElementById("c");
-			alert(typeof(canvas));
+			var context = new Context(canvas);
+			context.InitGL();
 		}
 
 		
