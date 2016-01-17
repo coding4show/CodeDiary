@@ -7,18 +7,10 @@
 		function WebStart(){
 			alert("WebStart");
 
-			var fileLoader = new FileLoader();
-			fileLoader.Load("diff.vs", function(text){
-				//document.body.innerText = text;
-			});
-
 			var canvas = document.getElementById("c");
-			var context = new Context(canvas);
-			context.InitGL();
+            Context.InitGL(canvas);
+            TestDraw();
 		}
-
-		
-
 	</script>
 </head>
 
