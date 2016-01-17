@@ -102,7 +102,6 @@ class Transform
     
     Use() : void
     {
-        /*
         var initMatrix = [
 			1.0, 0.0, 0.0, 0.0, 
 			0.0, 1.0, 0.0, 0.0, 
@@ -111,7 +110,6 @@ class Transform
 		];
         var modelviewLocation = Context.currentMaterail.modelviewLocation;
         Context.gl.uniformMatrix4fv(modelviewLocation, false, new Float32Array(initMatrix));
-        */
     }
 }
 
@@ -160,10 +158,9 @@ class Materail {
         this._verticesLocation = Context.gl.getAttribLocation(this._program, "aVertexPosition");
         Context.gl.enableVertexAttribArray(this._verticesLocation);
         
-        /*
         this._modelviewLocation = Context.gl.getUniformLocation(this._program, "uMVMatrix");
         this._projectLocation = Context.gl.getUniformLocation(this._program, "uPMatrix");
-        */
+        
         Context.currentMaterail = this;
     }
     
@@ -239,15 +236,7 @@ class Mesh
     {
         this._verticesBuff = Context.gl.createBuffer();
         Context.gl.bindBuffer(Context.gl.ARRAY_BUFFER, this._verticesBuff);
-        var vertices = [
-             0.0,  0.05,  0.0,
-            -0.05, -0.05,  0.0,
-             0.05, -0.05,  0.0
-        ];
-        
-        //Context.gl.bufferData(Context.gl.ARRAY_BUFFER, this.Vector3Array2Float32Array(this.vertices), Context.gl.STATIC_DRAW);
-        Context.gl.bufferData(Context.gl.ARRAY_BUFFER, new Float32Array(vertices), Context.gl.STATIC_DRAW);
-        
+        Context.gl.bufferData(Context.gl.ARRAY_BUFFER, this.Vector3Array2Float32Array(this.vertices), Context.gl.STATIC_DRAW);
     }
     
     Unload()
@@ -258,7 +247,6 @@ class Mesh
         Context.gl.bindBuffer(Context.gl.ARRAY_BUFFER, this._verticesBuff);
         Context.gl.vertexAttribPointer(Context.currentMaterail.verticesLocation, 3, Context.gl.FLOAT, false, 0, 0);
         Context.gl.drawArrays(Context.gl.TRIANGLES, 0, this.vertices.length);
-        alert(Context.gl.getError());
         
         //Context.gl.bindBuffer(Context.gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
         //Context.gl.drawElements(Context.gl.TRIANGLES, 0, 0, 0);
@@ -302,7 +290,6 @@ class Camera
 {
     Use():void
     {
-        /*
         var initMatrix = [
 			1.0, 0.0, 0.0, 0.0, 
 			0.0, 1.0, 0.0, 0.0, 
@@ -311,7 +298,6 @@ class Camera
 		];
         var projectLocation = Context.currentMaterail.projectLocation;
         Context.gl.uniformMatrix4fv(projectLocation, false, new Float32Array(initMatrix));
-        */
     }
 }
 
@@ -369,16 +355,30 @@ function OnLoadShader(vs: string, fs: string)
 
 function TestDraw()
 {
+    /*
+    var vs = "attribute vec3 aVertexPosition;\
+            uniform mat4 uMVMatrix;\
+            uniform mat4 uPMatrix;\
+            varying vec4 vColor;\
+            void main(void) {\
+            gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\
+            vColor = vec4(1,0,0,1);\
+        }";
+        
+    var fs = 'precision mediump float;\
+            varying vec4 vColor;\
+void main(void) {\
+    gl_FragColor = vColor;\
+}';
+    
+    OnLoadShader(vs, fs);
+    */
+    
     var vsLoader = new FileLoader();
     vsLoader.Load("diff.vs", function(vstext: string){
         var fsLoader = new FileLoader();
         fsLoader.Load("diff.fs", function(fstext: string){
-            try {
-                OnLoadShader(vstext, fstext);
-            } catch (error) {
-                alert(error);
-            }
-            
+            OnLoadShader(vstext, fstext);
         });
-    });
+    });   
 }
