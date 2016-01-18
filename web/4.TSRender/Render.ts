@@ -43,10 +43,93 @@ class Vector3
     
     constructor(x : number = 0, 
                 y : number = 0, 
-                z : number = 0){
+                z : number = 0)
+    {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+    
+    Length() : number
+    {
+        return Math.sqrt(this.x*this.x + this.y*this.y + this.z*this.z);
+    }
+    
+    Normalize() : void
+    {
+        
+    }
+    
+    //
+    // Static Properties
+    //
+    static get zero() : Vector3
+    {
+        return new Vector3(0, 0, 0);
+    }
+    static get one() : Vector3
+    {
+        return new Vector3(1, 1, 1);
+    }
+    static get back() : Vector3
+    {
+        return new Vector3(0, 0, -1);
+    }
+    static get left() : Vector3
+    {
+        return new Vector3(-1, 0, 0);
+    }
+    static get up() : Vector3
+    {
+        return new Vector3(0, 1, 0);
+    }
+    static get down() : Vector3
+    {
+        return new Vector3(0, -1, 0);
+    }
+    static get right() : Vector3
+    {
+        return new Vector3(1, 0, 0);
+    }
+    static get front() : Vector3
+    {
+        return new Vector3(0, 0, 1);
+    }
+    
+    //
+    // Static Method
+    //
+    static Add(a: Vector3, b: Vector3) : Vector3
+    {
+        return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
+    }
+    static Subtract(a: Vector3, b: Vector3): Vector3
+    {
+        return new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
+    }
+    static ScaleS(a: Vector3, b: number): Vector3
+    {
+        return new Vector3(a.x * b, a.y * b, a.z * b);
+    }
+    static ScaleV(a: Vector3, b: Vector3): Vector3
+    {
+        return new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
+    }
+    static Lerp(a: Vector3, b: Vector3, t: number): Vector3
+    {
+        return Vector3.Add(a, Vector3.ScaleS(Vector3.Subtract(b, a), t));
+    }
+    static Dot(a: Vector3, b: Vector3): number
+    {
+        return a.x * b.x + a.y * b.y + a.z * b.z;
+    }
+    static Cross(a: Vector3, b: Vector3): Vector3
+    {
+        return new Vector3 (a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+    }
+    static Length(a: Vector3) : number
+    {
+        return Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
     }
 }
 
