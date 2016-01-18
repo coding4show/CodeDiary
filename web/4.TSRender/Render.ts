@@ -127,10 +127,6 @@ class Vector3
     {
         return new Vector3 (a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
     }
-    static Length(a: Vector3) : number
-    {
-        return Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
-    }
 }
 
 /**
@@ -147,9 +143,84 @@ class Quaternion
 /**
  * Matrix 
  */
-class Matrix
+class Matrix4x4
 {
+    m00: number; m01: number; m02: number; m03: number;
+    m10: number; m11: number; m12: number; m13: number;
+    m20: number; m21: number; m22: number; m23: number;
+    m30: number; m31: number; m32: number; m33: number;
     
+    ToFloat32Array(): Float32Array
+    {
+        var re = new Float32Array(16);
+        re[0] = this.m00; re[4] = this.m01; re[8] = this.m02; re[12] = this.m03;
+        re[1] = this.m10; re[5] = this.m11; re[9] = this.m12; re[13] = this.m13;
+        re[2] = this.m20; re[6] = this.m21; re[10] = this.m22; re[14] = this.m23;
+        re[3] = this.m30; re[7] = this.m31; re[11] = this.m32; re[15] = this.m33;
+        return re;
+    }
+    
+    static get identity()
+    {
+        var re = new Matrix4x4();
+        re.m00 = 1; re.m01 = 0; re.m02 = 0; re.m03 = 0;
+        re.m10 = 1; re.m11 = 1; re.m12 = 0; re.m13 = 0;
+        re.m20 = 1; re.m21 = 0; re.m22 = 1; re.m23 = 0;
+        re.m30 = 1; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        return re;
+    }
+    
+    static MultiplyMatrix4x4(lhs: Matrix4x4, rhs: Matrix4x4): Matrix4x4
+    {
+        var re = new Matrix4x4();
+        re.m00 = lhs.m00 * rhs.m00 + lhs.m01 * rhs.m10 + lhs.m02 * rhs.m20 + lhs.m03 * rhs.m30,
+		re.m01 = lhs.m00 * rhs.m01 + lhs.m01 * rhs.m11 + lhs.m02 * rhs.m21 + lhs.m03 * rhs.m31,
+		re.m02 = lhs.m00 * rhs.m02 + lhs.m01 * rhs.m12 + lhs.m02 * rhs.m22 + lhs.m03 * rhs.m32,
+		re.m03 = lhs.m00 * rhs.m03 + lhs.m01 * rhs.m13 + lhs.m02 * rhs.m23 + lhs.m03 * rhs.m33,
+		re.m10 = lhs.m10 * rhs.m00 + lhs.m11 * rhs.m10 + lhs.m12 * rhs.m20 + lhs.m13 * rhs.m30,
+		re.m11 = lhs.m10 * rhs.m01 + lhs.m11 * rhs.m11 + lhs.m12 * rhs.m21 + lhs.m13 * rhs.m31,
+		re.m12 = lhs.m10 * rhs.m02 + lhs.m11 * rhs.m12 + lhs.m12 * rhs.m22 + lhs.m13 * rhs.m32,
+		re.m13 = lhs.m10 * rhs.m03 + lhs.m11 * rhs.m13 + lhs.m12 * rhs.m23 + lhs.m13 * rhs.m33,
+		re.m20 = lhs.m20 * rhs.m00 + lhs.m21 * rhs.m10 + lhs.m22 * rhs.m20 + lhs.m23 * rhs.m30,
+		re.m21 = lhs.m20 * rhs.m01 + lhs.m21 * rhs.m11 + lhs.m22 * rhs.m21 + lhs.m23 * rhs.m31,
+		re.m22 = lhs.m20 * rhs.m02 + lhs.m21 * rhs.m12 + lhs.m22 * rhs.m22 + lhs.m23 * rhs.m32,
+		re.m23 = lhs.m20 * rhs.m03 + lhs.m21 * rhs.m13 + lhs.m22 * rhs.m23 + lhs.m23 * rhs.m33,
+		re.m30 = lhs.m30 * rhs.m00 + lhs.m31 * rhs.m10 + lhs.m32 * rhs.m20 + lhs.m33 * rhs.m30,
+		re.m31 = lhs.m30 * rhs.m01 + lhs.m31 * rhs.m11 + lhs.m32 * rhs.m21 + lhs.m33 * rhs.m31,
+		re.m32 = lhs.m30 * rhs.m02 + lhs.m31 * rhs.m12 + lhs.m32 * rhs.m22 + lhs.m33 * rhs.m32,
+		re.m33 = lhs.m30 * rhs.m03 + lhs.m31 * rhs.m13 + lhs.m32 * rhs.m23 + lhs.m33 * rhs.m33
+        return re;
+    }
+    
+    MultiplyVector3(v: Vector3): Vector3
+    {
+        var result = new Vector3();
+        result.x = this.m00 * v.x + this.m01 * v.y + this.m02 * v.z + this.m03;
+        result.y = this.m10 * v.x + this.m11 * v.y + this.m12 * v.z + this.m13;
+        result.z = this.m20 * v.x + this.m21 * v.y + this.m22 * v.z + this.m23;
+        return result;
+    }
+    
+    //TODO
+    static TRS(pos: Vector3, q: Quaternion, s: Vector3): Matrix4x4
+    {
+        return Matrix4x4.identity;
+    }
+    
+    static Translation(tr: Vector3): Matrix4x4
+    {
+        return Matrix4x4.identity;
+    }
+    
+    static Rotation(r: Vector3): Matrix4x4
+    {
+        return Matrix4x4.identity;
+    }
+    
+    static Scale(s: Vector3): Matrix4x4
+    {
+        return Matrix4x4.identity;
+    }
 }
 
 /**
