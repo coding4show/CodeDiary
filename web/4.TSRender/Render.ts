@@ -201,25 +201,45 @@ class Matrix4x4
         return result;
     }
     
-    //TODO
+    
     static TRS(pos: Vector3, q: Quaternion, s: Vector3): Matrix4x4
     {
-        return Matrix4x4.identity;
+        var mtxTranslation = Matrix4x4.Translation(pos);
+        var mtxRotation = Matrix4x4.RotationFromQuaternion(q);
+        var mtxScale = Matrix4x4.Scale(s); 
+        return Matrix4x4.MultiplyMatrix4x4(Matrix4x4.MultiplyMatrix4x4(mtxRotation, mtxScale), mtxTranslation);
     }
     
     static Translation(tr: Vector3): Matrix4x4
     {
+        var re = new Matrix4x4();
+        re.m00 = 1; re.m01 = 0; re.m02 = 0; re.m03 = tr.x;
+        re.m10 = 1; re.m11 = 1; re.m12 = 0; re.m13 = tr.y;
+        re.m20 = 1; re.m21 = 0; re.m22 = 1; re.m23 = tr.z;
+        re.m30 = 1; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        return re;
+    }
+    
+    //TODO
+    static RotationFromEuler(r: Vector3): Matrix4x4
+    {
         return Matrix4x4.identity;
     }
     
-    static Rotation(r: Vector3): Matrix4x4
+    //TODO
+    static RotationFromQuaternion(q: Quaternion): Matrix4x4
     {
         return Matrix4x4.identity;
     }
     
     static Scale(s: Vector3): Matrix4x4
     {
-        return Matrix4x4.identity;
+        var re = new Matrix4x4();
+        re.m00 = s.x; re.m01 = 0; re.m02 = 0; re.m03 = 0;
+        re.m10 = 1; re.m11 = s.y; re.m12 = 0; re.m13 = 0;
+        re.m20 = 1; re.m21 = 0; re.m22 = s.z; re.m23 = 0;
+        re.m30 = 1; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        return re;
     }
 }
 
