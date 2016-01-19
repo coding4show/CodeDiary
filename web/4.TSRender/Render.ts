@@ -138,6 +138,22 @@ class Quaternion
     y : number;
     z : number;
     w : number;
+    
+    constructor(x: number = 0, 
+                y: number = 0,
+                z: number = 0, 
+                w: number = 0)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+    }
+    
+    static get identity() : Quaternion
+    {
+        return new Quaternion();
+    }
 }
 
 /**
@@ -164,9 +180,9 @@ class Matrix4x4
     {
         var re = new Matrix4x4();
         re.m00 = 1; re.m01 = 0; re.m02 = 0; re.m03 = 0;
-        re.m10 = 1; re.m11 = 1; re.m12 = 0; re.m13 = 0;
-        re.m20 = 1; re.m21 = 0; re.m22 = 1; re.m23 = 0;
-        re.m30 = 1; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        re.m10 = 0; re.m11 = 1; re.m12 = 0; re.m13 = 0;
+        re.m20 = 0; re.m21 = 0; re.m22 = 1; re.m23 = 0;
+        re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
         return re;
     }
     
@@ -213,10 +229,19 @@ class Matrix4x4
     static Translation(tr: Vector3): Matrix4x4
     {
         var re = new Matrix4x4();
+        
         re.m00 = 1; re.m01 = 0; re.m02 = 0; re.m03 = tr.x;
-        re.m10 = 1; re.m11 = 1; re.m12 = 0; re.m13 = tr.y;
-        re.m20 = 1; re.m21 = 0; re.m22 = 1; re.m23 = tr.z;
-        re.m30 = 1; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        re.m10 = 0; re.m11 = 1; re.m12 = 0; re.m13 = tr.y;
+        re.m20 = 0; re.m21 = 0; re.m22 = 1; re.m23 = tr.z;
+        re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        
+        /*
+        re.m00 = 1; re.m01 = 0; re.m02 = 0; re.m03 = 0;
+        re.m10 = 0; re.m11 = 1; re.m12 = 0; re.m13 = 0;
+        re.m20 = 0; re.m21 = 0; re.m22 = 1; re.m23 = 0;
+        re.m30 = tr.x; re.m31 = tr.y; re.m32 = tr.z; re.m33 = 1;
+        */
+        
         return re;
     }
     
@@ -236,10 +261,22 @@ class Matrix4x4
     {
         var re = new Matrix4x4();
         re.m00 = s.x; re.m01 = 0; re.m02 = 0; re.m03 = 0;
-        re.m10 = 1; re.m11 = s.y; re.m12 = 0; re.m13 = 0;
-        re.m20 = 1; re.m21 = 0; re.m22 = s.z; re.m23 = 0;
-        re.m30 = 1; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        re.m10 = 0; re.m11 = s.y; re.m12 = 0; re.m13 = 0;
+        re.m20 = 0; re.m21 = 0; re.m22 = s.z; re.m23 = 0;
+        re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
         return re;
+    }
+    
+    //TODO
+    static Perspective(fov: number, aspect: number, zNear: number, zFar: number): Matrix4x4
+    {
+        return Matrix4x4.identity;
+    }
+    
+    //TODO
+    static Ortho(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): Matrix4x4
+    {
+        return Matrix4x4.identity;
     }
 }
 
@@ -274,16 +311,19 @@ class Transform
     scale : Vector3;
     rotation : Quaternion;
     
+    constructor()
+    {
+        this.parent = null;
+        this.position = Vector3.zero;
+        this.scale = Vector3.one;
+        this.rotation = Quaternion.identity;
+    }
+    
     Use() : void
     {
-        var initMatrix = [
-			1.0, 0.0, 0.0, 0.0, 
-			0.0, 1.0, 0.0, 0.0, 
-			0.0, 0.0, 1.0, 0.0, 
-			0.0, 0.0, 0.0, 1.0, 
-		];
+        var curMatrix = Matrix4x4.TRS(this.position, this.rotation, this.scale);
         var modelviewLocation = Context.currentMaterail.modelviewLocation;
-        Context.gl.uniformMatrix4fv(modelviewLocation, false, new Float32Array(initMatrix));
+        Context.gl.uniformMatrix4fv(modelviewLocation, false, curMatrix.ToFloat32Array());
     }
 }
 
@@ -464,14 +504,8 @@ class Camera
 {
     Use():void
     {
-        var initMatrix = [
-			1.0, 0.0, 0.0, 0.0, 
-			0.0, 1.0, 0.0, 0.0, 
-			0.0, 0.0, 1.0, 0.0, 
-			0.0, 0.0, 0.0, 1.0, 
-		];
         var projectLocation = Context.currentMaterail.projectLocation;
-        Context.gl.uniformMatrix4fv(projectLocation, false, new Float32Array(initMatrix));
+        Context.gl.uniformMatrix4fv(projectLocation, false, Matrix4x4.identity.ToFloat32Array());
     }
 }
 
@@ -509,11 +543,14 @@ class Context
 
 function OnLoadShader(vs: string, fs: string)
 {
+    Context.gl.clear(Context.gl.COLOR_BUFFER_BIT | Context.gl.DEPTH_BUFFER_BIT);
+    
     var mat = new Materail();
     mat.Load(vs, fs);
     mat.Use();
     
     var transform = new Transform();
+    //transform.position = new Vector3(0.5);
     transform.Use();
     
     var camera = new Camera();
@@ -524,6 +561,15 @@ function OnLoadShader(vs: string, fs: string)
     mesh.triangles = [0, 1, 2];
     mesh.Load();
     
+    mesh.Draw();
+    
+    transform.position = new Vector3(-0.5);
+    transform.Use();
+    mesh.Draw();
+    
+    transform.position = new Vector3(-0.5, 0.5);
+    transform.scale = new Vector3(0.5, 1, 1);
+    transform.Use();
     mesh.Draw();
 }
 
