@@ -573,24 +573,25 @@ var Context = (function () {
     return Context;
 })();
 function OnLoadShader(vs, fs) {
-    Context.gl.clear(Context.gl.COLOR_BUFFER_BIT | Context.gl.DEPTH_BUFFER_BIT);
     var mat = new Materail();
     mat.Load(vs, fs);
     mat.Use();
-    var transform = new Transform();
-    //transform.position = new Vector3(0.5);
-    transform.Use();
-    var camera = new Camera();
-    camera.Use();
     var mesh = new Mesh();
     mesh.vertices = [new Vector3(), new Vector3(0.5, 0, 0), new Vector3(0, 0.5, 0)];
     mesh.triangles = [0, 1, 2];
     mesh.Load();
-    mesh.Draw();
-    transform.position = new Vector3(-0.5);
-    transform.rotation = new Vector3(0, 0, 1);
-    transform.Use();
-    mesh.Draw();
+    var f = 0;
+    setInterval(function () {
+        Context.gl.clear(Context.gl.COLOR_BUFFER_BIT | Context.gl.DEPTH_BUFFER_BIT);
+        f += 0.03;
+        var transform = new Transform();
+        transform.position = new Vector3(-0.5);
+        transform.rotation = new Vector3(0, f, 0);
+        transform.Use();
+        var camera = new Camera();
+        camera.Use();
+        mesh.Draw();
+    }, 16);
 }
 function TestDraw() {
     /*
