@@ -218,10 +218,10 @@ class Matrix4x4
     }
     
     
-    static TRS(pos: Vector3, q: Quaternion, s: Vector3): Matrix4x4
+    static TRS(pos: Vector3, r: Vector3, s: Vector3): Matrix4x4
     {
         var mtxTranslation = Matrix4x4.Translation(pos);
-        var mtxRotation = Matrix4x4.RotationFromQuaternion(q);
+        var mtxRotation = Matrix4x4.RotationFromEuler(r);
         var mtxScale = Matrix4x4.Scale(s); 
         return Matrix4x4.MultiplyMatrix4x4(Matrix4x4.MultiplyMatrix4x4(mtxRotation, mtxScale), mtxTranslation);
     }
@@ -245,10 +245,52 @@ class Matrix4x4
         return re;
     }
     
+    static RotationFromEulerX(r: number): Matrix4x4
+    {
+        var re = new Matrix4x4();
+        var cos = Math.cos(r);
+        var sin = Math.sin(r);
+        re.m00 = 1; re.m01 = 0; re.m02 = 0; re.m03 = 0;
+        re.m10 = 0; re.m11 = cos; re.m12 = -sin; re.m13 = 0;
+        re.m20 = 0; re.m21 = sin; re.m22 = cos; re.m23 = 0;
+        re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        
+        return re;
+    }
+    
+    static RotationFromEulerY(r: number): Matrix4x4
+    {
+        var re = new Matrix4x4();
+        var cos = Math.cos(r);
+        var sin = Math.sin(r);
+        re.m00 = cos; re.m01 = 0; re.m02 = sin; re.m03 = 0;
+        re.m10 = 0; re.m11 = 1; re.m12 = 0; re.m13 = 0;
+        re.m20 = -sin; re.m21 = 0; re.m22 = cos; re.m23 = 0;
+        re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        
+        return re;
+    }
+    
+    static RotationFromEulerZ(r: number): Matrix4x4
+    {
+        var re = new Matrix4x4();
+        var cos = Math.cos(r);
+        var sin = Math.sin(r);
+        re.m00 = cos; re.m01 = -sin; re.m02 = 0; re.m03 = 0;
+        re.m10 = sin; re.m11 = cos; re.m12 = 0; re.m13 = 0;
+        re.m20 = 0; re.m21 = 0; re.m22 = 1; re.m23 = 0;
+        re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        
+        return re;
+    }
+    
     //TODO
     static RotationFromEuler(r: Vector3): Matrix4x4
     {
-        return Matrix4x4.identity;
+        var mtxRotateX = Matrix4x4.RotationFromEulerX(r.x);
+        var mtxRotateY = Matrix4x4.RotationFromEulerY(r.y);
+        var mtxRotateZ = Matrix4x4.RotationFromEulerZ(r.z);
+        return Matrix4x4.MultiplyMatrix4x4(mtxRotateX, Matrix4x4.MultiplyMatrix4x4(mtxRotateZ, mtxRotateY));
     }
     
     //TODO
@@ -309,14 +351,14 @@ class Transform
     parent : Transform;
     position : Vector3;
     scale : Vector3;
-    rotation : Quaternion;
+    rotation : Vector3;
     
     constructor()
     {
         this.parent = null;
         this.position = Vector3.zero;
         this.scale = Vector3.one;
-        this.rotation = Quaternion.identity;
+        this.rotation = Vector3.zero;
     }
     
     Use() : void
@@ -564,11 +606,7 @@ function OnLoadShader(vs: string, fs: string)
     mesh.Draw();
     
     transform.position = new Vector3(-0.5);
-    transform.Use();
-    mesh.Draw();
-    
-    transform.position = new Vector3(-0.5, 0.5);
-    transform.scale = new Vector3(0.5, 1, 1);
+    transform.rotation = new Vector3(0, 0, 1);
     transform.Use();
     mesh.Draw();
 }

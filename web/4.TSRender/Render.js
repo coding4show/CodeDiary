@@ -229,9 +229,9 @@ var Matrix4x4 = (function () {
         result.z = this.m20 * v.x + this.m21 * v.y + this.m22 * v.z + this.m23;
         return result;
     };
-    Matrix4x4.TRS = function (pos, q, s) {
+    Matrix4x4.TRS = function (pos, r, s) {
         var mtxTranslation = Matrix4x4.Translation(pos);
-        var mtxRotation = Matrix4x4.RotationFromQuaternion(q);
+        var mtxRotation = Matrix4x4.RotationFromEuler(r);
         var mtxScale = Matrix4x4.Scale(s);
         return Matrix4x4.MultiplyMatrix4x4(Matrix4x4.MultiplyMatrix4x4(mtxRotation, mtxScale), mtxTranslation);
     };
@@ -261,9 +261,78 @@ var Matrix4x4 = (function () {
         */
         return re;
     };
+    Matrix4x4.RotationFromEulerX = function (r) {
+        var re = new Matrix4x4();
+        var cos = Math.cos(r);
+        var sin = Math.sin(r);
+        re.m00 = 1;
+        re.m01 = 0;
+        re.m02 = 0;
+        re.m03 = 0;
+        re.m10 = 0;
+        re.m11 = cos;
+        re.m12 = -sin;
+        re.m13 = 0;
+        re.m20 = 0;
+        re.m21 = sin;
+        re.m22 = cos;
+        re.m23 = 0;
+        re.m30 = 0;
+        re.m31 = 0;
+        re.m32 = 0;
+        re.m33 = 1;
+        return re;
+    };
+    Matrix4x4.RotationFromEulerY = function (r) {
+        var re = new Matrix4x4();
+        var cos = Math.cos(r);
+        var sin = Math.sin(r);
+        re.m00 = cos;
+        re.m01 = 0;
+        re.m02 = sin;
+        re.m03 = 0;
+        re.m10 = 0;
+        re.m11 = 1;
+        re.m12 = 0;
+        re.m13 = 0;
+        re.m20 = -sin;
+        re.m21 = 0;
+        re.m22 = cos;
+        re.m23 = 0;
+        re.m30 = 0;
+        re.m31 = 0;
+        re.m32 = 0;
+        re.m33 = 1;
+        return re;
+    };
+    Matrix4x4.RotationFromEulerZ = function (r) {
+        var re = new Matrix4x4();
+        var cos = Math.cos(r);
+        var sin = Math.sin(r);
+        re.m00 = cos;
+        re.m01 = -sin;
+        re.m02 = 0;
+        re.m03 = 0;
+        re.m10 = sin;
+        re.m11 = cos;
+        re.m12 = 0;
+        re.m13 = 0;
+        re.m20 = 0;
+        re.m21 = 0;
+        re.m22 = 1;
+        re.m23 = 0;
+        re.m30 = 0;
+        re.m31 = 0;
+        re.m32 = 0;
+        re.m33 = 1;
+        return re;
+    };
     //TODO
     Matrix4x4.RotationFromEuler = function (r) {
-        return Matrix4x4.identity;
+        var mtxRotateX = Matrix4x4.RotationFromEulerX(r.x);
+        var mtxRotateY = Matrix4x4.RotationFromEulerY(r.y);
+        var mtxRotateZ = Matrix4x4.RotationFromEulerZ(r.z);
+        return Matrix4x4.MultiplyMatrix4x4(mtxRotateX, Matrix4x4.MultiplyMatrix4x4(mtxRotateZ, mtxRotateY));
     };
     //TODO
     Matrix4x4.RotationFromQuaternion = function (q) {
@@ -323,7 +392,7 @@ var Transform = (function () {
         this.parent = null;
         this.position = Vector3.zero;
         this.scale = Vector3.one;
-        this.rotation = Quaternion.identity;
+        this.rotation = Vector3.zero;
     }
     Transform.prototype.Use = function () {
         var curMatrix = Matrix4x4.TRS(this.position, this.rotation, this.scale);
@@ -519,10 +588,7 @@ function OnLoadShader(vs, fs) {
     mesh.Load();
     mesh.Draw();
     transform.position = new Vector3(-0.5);
-    transform.Use();
-    mesh.Draw();
-    transform.position = new Vector3(-0.5, 0.5);
-    transform.scale = new Vector3(0.5, 1, 1);
+    transform.rotation = new Vector3(0, 0, 1);
     transform.Use();
     mesh.Draw();
 }
