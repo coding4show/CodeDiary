@@ -1,22 +1,4 @@
 
-
-/**
- * FileLoader
- */
-class FileLoader
-{
-	Load(url: string, callback:{(textContent: string): void;})
-	{
-		var request = new XMLHttpRequest();
-		request.responseType = "text";
-		request.onload = function() { 
-			callback(request.responseText);
-		};
-		request.open("GET", url, true);
-		request.send(null);
-	}
-}
-
 /**
  * Vector2
  */
@@ -367,6 +349,8 @@ class Transform
         var modelviewLocation = Context.currentMaterail.modelviewLocation;
         Context.gl.uniformMatrix4fv(modelviewLocation, false, curMatrix.ToFloat32Array());
     }
+    
+    
 }
 
 /**
@@ -377,9 +361,10 @@ class Texture {
 }
 
 /**
- * Materail
+ * Material
  */
-class Materail {
+class Material {
+    private _gl : WebGLRenderingContext;
     private _program : WebGLProgram;
     private _verticesLocation : number;
     private _modelviewLocation : WebGLUniformLocation;
@@ -521,23 +506,6 @@ class Mesh
     }
 }
 
-/**
- * MeshRender
- */
-class MeshRender
-{
-    mesh : Mesh;
-    materail : Materail;
-}
-
-/**
- * GameObject
- */
-class GameObject
-{
-    transform : Transform;
-    render : MeshRender;
-}
 
 /**
  * Camera
@@ -552,31 +520,51 @@ class Camera
 }
 
 /**
+ * MeshRender
+ */
+class MeshRender
+{
+    mesh : Mesh;
+    material : Material;
+    transform : Transform;
+    camera : Camera;
+    
+    Draw()
+    {
+        this.material.Use();
+        this.transform.Use();
+        this.camera.Use();
+        this.mesh.Draw();
+    }
+}
+
+/**
  * Context
  */
 class Context
 {
 	static canvas;
-	static gl : WebGLRenderingContext;
-    static currentMaterail : Materail;
+	static agl : WebGLRenderingContext;
+    static currentMaterail : Material;
     
 	static InitGL(canvas)
 	{
         Context.canvas = canvas;
 	    try 
 		{
-	        Context.gl = canvas.getContext("experimental-webgl");
-			Context.gl.viewport(0, 0, canvas.width, canvas.height);
+            var gl: WebGLRenderingContext;
+	        gl = canvas.getContext("experimental-webgl");
+			gl.viewport(0, 0, canvas.width, canvas.height);
             
             //TestClear
-			Context.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            Context.gl.clear(Context.gl.COLOR_BUFFER_BIT | Context.gl.DEPTH_BUFFER_BIT);
-            Context.gl.enable(Context.gl.DEPTH_TEST);
+			gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST);
 	    }
 		catch (e) 
 		{}
 	    
-		if (!Context.gl)
+		if (!gl)
 		{
 	        alert("Could not initialise WebGL, sorry :-(");
 	    }
@@ -585,9 +573,9 @@ class Context
 
 function OnLoadShader(vs: string, fs: string)
 {
+    var gl: WebGLRenderingContext;
     
-    
-    var mat = new Materail();
+    var mat = new Material();
     mat.Load(vs, fs);
     mat.Use();
     
@@ -602,7 +590,7 @@ function OnLoadShader(vs: string, fs: string)
     
     setInterval(function(){
         
-        Context.gl.clear(Context.gl.COLOR_BUFFER_BIT | Context.gl.DEPTH_BUFFER_BIT);
+        gl.clear(Context.gl.COLOR_BUFFER_BIT | Context.gl.DEPTH_BUFFER_BIT);
         
         f += 0.03;
         
@@ -617,6 +605,23 @@ function OnLoadShader(vs: string, fs: string)
         mesh.Draw();
         
     }, 16);
+}
+
+/**
+ * FileLoader
+ */
+class FileLoader
+{
+	Load(url: string, callback:{(textContent: string): void;})
+	{
+		var request = new XMLHttpRequest();
+		request.responseType = "text";
+		request.onload = function() { 
+			callback(request.responseText);
+		};
+		request.open("GET", url, true);
+		request.send(null);
+	}
 }
 
 function TestDraw()

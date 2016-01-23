@@ -1,21 +1,4 @@
 /**
- * FileLoader
- */
-var FileLoader = (function () {
-    function FileLoader() {
-    }
-    FileLoader.prototype.Load = function (url, callback) {
-        var request = new XMLHttpRequest();
-        request.responseType = "text";
-        request.onload = function () {
-            callback(request.responseText);
-        };
-        request.open("GET", url, true);
-        request.send(null);
-    };
-    return FileLoader;
-})();
-/**
  * Vector2
  */
 var Vector2 = (function () {
@@ -410,38 +393,38 @@ var Texture = (function () {
     return Texture;
 })();
 /**
- * Materail
+ * Material
  */
-var Materail = (function () {
-    function Materail() {
+var Material = (function () {
+    function Material() {
     }
-    Object.defineProperty(Materail.prototype, "verticesLocation", {
+    Object.defineProperty(Material.prototype, "verticesLocation", {
         get: function () {
             return this._verticesLocation;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Materail.prototype, "modelviewLocation", {
+    Object.defineProperty(Material.prototype, "modelviewLocation", {
         get: function () {
             return this._modelviewLocation;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Materail.prototype, "projectLocation", {
+    Object.defineProperty(Material.prototype, "projectLocation", {
         get: function () {
             return this._projectLocation;
         },
         enumerable: true,
         configurable: true
     });
-    Materail.prototype.Load = function (vs, fs) {
+    Material.prototype.Load = function (vs, fs) {
         this._program = this.CreateProgram(vs, fs);
     };
-    Materail.prototype.Unload = function () {
+    Material.prototype.Unload = function () {
     };
-    Materail.prototype.Use = function () {
+    Material.prototype.Use = function () {
         Context.gl.useProgram(this._program);
         this._verticesLocation = Context.gl.getAttribLocation(this._program, "aVertexPosition");
         Context.gl.enableVertexAttribArray(this._verticesLocation);
@@ -449,7 +432,7 @@ var Materail = (function () {
         this._projectLocation = Context.gl.getUniformLocation(this._program, "uPMatrix");
         Context.currentMaterail = this;
     };
-    Materail.prototype.CreateVertexShader = function (str) {
+    Material.prototype.CreateVertexShader = function (str) {
         var shader = Context.gl.createShader(Context.gl.VERTEX_SHADER);
         if (this.CompileShader(shader, str)) {
             return shader;
@@ -458,7 +441,7 @@ var Materail = (function () {
             return null;
         }
     };
-    Materail.prototype.CreateFragmentShader = function (str) {
+    Material.prototype.CreateFragmentShader = function (str) {
         var shader = Context.gl.createShader(Context.gl.FRAGMENT_SHADER);
         if (this.CompileShader(shader, str)) {
             return shader;
@@ -467,7 +450,7 @@ var Materail = (function () {
             return null;
         }
     };
-    Materail.prototype.CompileShader = function (shader, str) {
+    Material.prototype.CompileShader = function (shader, str) {
         Context.gl.shaderSource(shader, str);
         Context.gl.compileShader(shader);
         if (!Context.gl.getShaderParameter(shader, Context.gl.COMPILE_STATUS)) {
@@ -476,7 +459,7 @@ var Materail = (function () {
         }
         return true;
     };
-    Materail.prototype.CreateProgram = function (vs, fs) {
+    Material.prototype.CreateProgram = function (vs, fs) {
         var fragmentShader = this.CreateVertexShader(vs);
         var vertexShader = this.CreateFragmentShader(fs);
         var shaderProgram = Context.gl.createProgram();
@@ -489,7 +472,7 @@ var Materail = (function () {
         }
         return shaderProgram;
     };
-    return Materail;
+    return Material;
 })();
 /**
  * Mesh
@@ -573,7 +556,7 @@ var Context = (function () {
     return Context;
 })();
 function OnLoadShader(vs, fs) {
-    var mat = new Materail();
+    var mat = new Material();
     mat.Load(vs, fs);
     mat.Use();
     var mesh = new Mesh();
@@ -593,6 +576,23 @@ function OnLoadShader(vs, fs) {
         mesh.Draw();
     }, 16);
 }
+/**
+ * FileLoader
+ */
+var FileLoader = (function () {
+    function FileLoader() {
+    }
+    FileLoader.prototype.Load = function (url, callback) {
+        var request = new XMLHttpRequest();
+        request.responseType = "text";
+        request.onload = function () {
+            callback(request.responseText);
+        };
+        request.open("GET", url, true);
+        request.send(null);
+    };
+    return FileLoader;
+})();
 function TestDraw() {
     /*
     var vs = "attribute vec3 aVertexPosition;\
