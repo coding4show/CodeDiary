@@ -217,13 +217,6 @@ class Matrix4x4
         re.m20 = 0; re.m21 = 0; re.m22 = 1; re.m23 = tr.z;
         re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
         
-        /*
-        re.m00 = 1; re.m01 = 0; re.m02 = 0; re.m03 = 0;
-        re.m10 = 0; re.m11 = 1; re.m12 = 0; re.m13 = 0;
-        re.m20 = 0; re.m21 = 0; re.m22 = 1; re.m23 = 0;
-        re.m30 = tr.x; re.m31 = tr.y; re.m32 = tr.z; re.m33 = 1;
-        */
-        
         return re;
     }
     
@@ -343,14 +336,10 @@ class Transform
         this.rotation = Vector3.zero;
     }
     
-    Use() : void
+    GetModelMatrix(): Matrix4x4 
     {
-        var curMatrix = Matrix4x4.TRS(this.position, this.rotation, this.scale);
-        var modelviewLocation = Context.currentMaterail.modelviewLocation;
-        Context.gl.uniformMatrix4fv(modelviewLocation, false, curMatrix.ToFloat32Array());
+        return Matrix4x4.TRS(this.position, this.rotation, this.scale);
     }
-    
-    
 }
 
 /**
@@ -369,6 +358,11 @@ class Material {
     private _verticesLocation : number;
     private _modelviewLocation : WebGLUniformLocation;
     private _projectLocation : WebGLUniformLocation;
+    
+    constructor(gl: WebGLRenderingContext)
+    {
+        this._gl = gl;
+    }
     
     get verticesLocation() : number{
         return this._verticesLocation;
@@ -394,20 +388,22 @@ class Material {
     
     Use()
     {
-        Context.gl.useProgram(this._program);
-        
-        this._verticesLocation = Context.gl.getAttribLocation(this._program, "aVertexPosition");
-        Context.gl.enableVertexAttribArray(this._verticesLocation);
-        
-        this._modelviewLocation = Context.gl.getUniformLocation(this._program, "uMVMatrix");
-        this._projectLocation = Context.gl.getUniformLocation(this._program, "uPMatrix");
-        
-        Context.currentMaterail = this;
+        this._gl.useProgram(this._program);
+    }
+    
+    GetAttribLocation(name: string): number
+    {
+        return this._gl.getAttribLocation(this._program, name);
+    }
+    
+    GetUniformLocation(name: string): WebGLUniformLocation
+    {
+        return this._gl.getUniformLocation(this._program, name);
     }
     
     private CreateVertexShader(str: string) : WebGLShader
 	{
-		var shader = Context.gl.createShader(Context.gl.VERTEX_SHADER);
+		var shader = this._gl.createShader(this._gl.VERTEX_SHADER);
 		if (this.CompileShader(shader, str)){
 			return shader;
 		}
@@ -418,7 +414,7 @@ class Material {
 
 	private CreateFragmentShader(str: string) : WebGLShader
 	{
-		var shader = Context.gl.createShader(Context.gl.FRAGMENT_SHADER);
+		var shader = this._gl.createShader(this._gl.FRAGMENT_SHADER);
 		if (this.CompileShader(shader, str)) {
 			return shader;
 		}
@@ -429,11 +425,11 @@ class Material {
 
 	private CompileShader(shader: WebGLShader, str: string) : boolean
 	{
-		Context.gl.shaderSource(shader, str);
-	    Context.gl.compileShader(shader);
+		this._gl.shaderSource(shader, str);
+	    this._gl.compileShader(shader);
 
-		if (!Context.gl.getShaderParameter(shader, Context.gl.COMPILE_STATUS)) {
-			alert(Context.gl.getShaderInfoLog(shader));
+		if (!this._gl.getShaderParameter(shader, this._gl.COMPILE_STATUS)) {
+			alert(this._gl.getShaderInfoLog(shader));
 		    return false;
 		}
 
@@ -445,12 +441,12 @@ class Material {
 		var fragmentShader = this.CreateVertexShader(vs);
 		var vertexShader = this.CreateFragmentShader(fs);
 
-        var shaderProgram = Context.gl.createProgram();
-        Context.gl.attachShader(shaderProgram, vertexShader);
-        Context.gl.attachShader(shaderProgram, fragmentShader);
-        Context.gl.linkProgram(shaderProgram);
+        var shaderProgram = this._gl.createProgram();
+        this._gl.attachShader(shaderProgram, vertexShader);
+        this._gl.attachShader(shaderProgram, fragmentShader);
+        this._gl.linkProgram(shaderProgram);
 
-        if (!Context.gl.getProgramParameter(shaderProgram, Context.gl.LINK_STATUS)) {
+        if (!this._gl.getProgramParameter(shaderProgram, this._gl.LINK_STATUS)) {
             alert("Could not initialise shaders");
             return null;
         }
@@ -464,6 +460,7 @@ class Material {
  */
 class Mesh
 {
+    private _gl: WebGLRenderingContext;
     private _verticesBuff: WebGLBuffer;
     private _trianglesBuff: WebGLBuffer;
     
@@ -472,28 +469,32 @@ class Mesh
     colors : Color[];
     triangles : number[];
     
+    constructor(gl: WebGLRenderingContext)
+    {
+        this._gl = gl;
+    }
     
     Load()
     {
-        this._verticesBuff = Context.gl.createBuffer();
-        Context.gl.bindBuffer(Context.gl.ARRAY_BUFFER, this._verticesBuff);
-        Context.gl.bufferData(Context.gl.ARRAY_BUFFER, this.Vector3Array2Float32Array(this.vertices), Context.gl.STATIC_DRAW);
+        this._verticesBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
+        this._gl.bufferData(this._gl.ARRAY_BUFFER, this.Vector3Array2Float32Array(this.vertices), this._gl.STATIC_DRAW);
     }
     
     Unload()
     {}
     
-    Draw()
+    GetVerticesBuffer(): WebGLBuffer
     {
-        Context.gl.bindBuffer(Context.gl.ARRAY_BUFFER, this._verticesBuff);
-        Context.gl.vertexAttribPointer(Context.currentMaterail.verticesLocation, 3, Context.gl.FLOAT, false, 0, 0);
-        Context.gl.drawArrays(Context.gl.TRIANGLES, 0, this.vertices.length);
-        
-        //Context.gl.bindBuffer(Context.gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
-        //Context.gl.drawElements(Context.gl.TRIANGLES, 0, 0, 0);
+        return this._verticesBuff;
     }
     
-    Vector3Array2Float32Array(vertices: Vector3[]) : Float32Array
+    GetTrianglesBuff(): WebGLBuffer
+    {
+        return this._trianglesBuff;
+    }
+    
+    private Vector3Array2Float32Array(vertices: Vector3[]) : Float32Array
     {
         var re = new Float32Array(vertices.length * 3);
         for (var i=0; i<vertices.length; ++i)
@@ -512,10 +513,14 @@ class Mesh
  */
 class Camera
 {
-    Use():void
+    GetViewMatrix(): Matrix4x4
     {
-        var projectLocation = Context.currentMaterail.projectLocation;
-        Context.gl.uniformMatrix4fv(projectLocation, false, Matrix4x4.identity.ToFloat32Array());
+        return Matrix4x4.identity;
+    }
+    
+    GetProjectMatrix(): Matrix4x4
+    {
+        return Matrix4x4.identity;
     }
 }
 
@@ -524,17 +529,29 @@ class Camera
  */
 class MeshRender
 {
+    private _gl: WebGLRenderingContext;
+    
     mesh : Mesh;
     material : Material;
     transform : Transform;
     camera : Camera;
     
+    constructor(gl: WebGLRenderingContext)
+    {
+        this._gl = gl;
+    }
+    
     Draw()
     {
         this.material.Use();
-        this.transform.Use();
-        this.camera.Use();
-        this.mesh.Draw();
+        
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.mesh.GetVerticesBuffer());
+        this._gl.vertexAttribPointer(this.material.GetAttribLocation("aVertexPosition"), 3, this._gl.FLOAT, false, 0, 0);
+        
+        this._gl.uniformMatrix4fv(this.material.GetUniformLocation("uMVMatrix"), false, this.transform.GetModelMatrix().ToFloat32Array());
+        this._gl.uniformMatrix4fv(this.material.GetUniformLocation("uPMatrix"), false, this.camera.GetProjectMatrix().ToFloat32Array());
+        
+        this._gl.drawArrays(this._gl.TRIANGLES, 0, this.mesh.vertices.length);
     }
 }
 
@@ -544,8 +561,7 @@ class MeshRender
 class Context
 {
 	static canvas;
-	static agl : WebGLRenderingContext;
-    static currentMaterail : Material;
+	static gl : WebGLRenderingContext;
     
 	static InitGL(canvas)
 	{
@@ -560,6 +576,8 @@ class Context
 			gl.clearColor(0.0, 0.0, 0.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             gl.enable(gl.DEPTH_TEST);
+            
+            Context.gl = gl;
 	    }
 		catch (e) 
 		{}
@@ -572,37 +590,40 @@ class Context
 }
 
 function OnLoadShader(vs: string, fs: string)
-{
-    var gl: WebGLRenderingContext;
+{   
+    var gl = Context.gl;
     
-    var mat = new Material();
+    var mat = new Material(gl);
     mat.Load(vs, fs);
     mat.Use();
     
-    
-     
-    var mesh = new Mesh();
+    var mesh = new Mesh(gl);
     mesh.vertices = [new Vector3(), new Vector3(0.5, 0, 0), new Vector3(0, 0.5, 0)];
     mesh.triangles = [0, 1, 2];
     mesh.Load();
+    
+    var camera = new Camera();
+    var transform = new Transform();
+    
+    var render = new MeshRender(gl);
+    render.mesh = mesh;
+    render.camera = camera;
+    render.material = mat;
+    render.transform = transform;
     
     var f = 0;
     
     setInterval(function(){
         
-        gl.clear(Context.gl.COLOR_BUFFER_BIT | Context.gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         
         f += 0.03;
         
-        var transform = new Transform();
+        
         transform.position = new Vector3(-0.5);
         transform.rotation = new Vector3(0, f, 0);
-        transform.Use();
         
-        var camera = new Camera();
-        camera.Use();
-        
-        mesh.Draw();
+        render.Draw();
         
     }, 16);
 }
