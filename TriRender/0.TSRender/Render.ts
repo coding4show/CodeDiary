@@ -355,23 +355,10 @@ class Texture {
 class Material {
     private _gl : WebGLRenderingContext;
     private _program : WebGLProgram;
-    private _verticesLocation : number;
-    private _modelviewLocation : WebGLUniformLocation;
-    private _projectLocation : WebGLUniformLocation;
     
     constructor(gl: WebGLRenderingContext)
     {
         this._gl = gl;
-    }
-    
-    get verticesLocation() : number{
-        return this._verticesLocation;
-    }
-    get modelviewLocation() : WebGLUniformLocation{
-        return this._modelviewLocation;
-    }
-    get projectLocation() : WebGLUniformLocation{
-        return this._projectLocation;
     }
     
 	textures : Texture[];
@@ -393,12 +380,15 @@ class Material {
     
     GetAttribLocation(name: string): number
     {
-        return this._gl.getAttribLocation(this._program, name);
+        var re = this._gl.getAttribLocation(this._program, name);
+        this._gl.enableVertexAttribArray(re);
+        return re;
     }
     
     GetUniformLocation(name: string): WebGLUniformLocation
     {
-        return this._gl.getUniformLocation(this._program, name);
+        var re = this._gl.getUniformLocation(this._program, name);
+        return re;
     }
     
     private CreateVertexShader(str: string) : WebGLShader
@@ -551,6 +541,9 @@ class MeshRender
         this._gl.uniformMatrix4fv(this.material.GetUniformLocation("uMVMatrix"), false, this.transform.GetModelMatrix().ToFloat32Array());
         this._gl.uniformMatrix4fv(this.material.GetUniformLocation("uPMatrix"), false, this.camera.GetProjectMatrix().ToFloat32Array());
         
+        var re = this._gl.getBufferParameter(this._gl.ARRAY_BUFFER, this._gl.BUFFER_SIZE);
+        console.log(re);
+        
         this._gl.drawArrays(this._gl.TRIANGLES, 0, this.mesh.vertices.length);
     }
 }
@@ -617,8 +610,7 @@ function OnLoadShader(vs: string, fs: string)
         
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         
-        f += 0.03;
-        
+        f += 1;
         
         transform.position = new Vector3(-0.5);
         transform.rotation = new Vector3(0, f, 0);
@@ -643,29 +635,15 @@ class FileLoader
 		request.open("GET", url, true);
 		request.send(null);
 	}
+    
+    static Load(urls: string[])
+    {
+        
+    }
 }
 
 function TestDraw()
 {
-    /*
-    var vs = "attribute vec3 aVertexPosition;\
-            uniform mat4 uMVMatrix;\
-            uniform mat4 uPMatrix;\
-            varying vec4 vColor;\
-            void main(void) {\
-            gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\
-            vColor = vec4(1,0,0,1);\
-        }";
-        
-    var fs = 'precision mediump float;\
-            varying vec4 vColor;\
-void main(void) {\
-    gl_FragColor = vColor;\
-}';
-    
-    OnLoadShader(vs, fs);
-    */
-    
     var vsLoader = new FileLoader();
     vsLoader.Load("diff.vs", function(vstext: string){
         var fsLoader = new FileLoader();

@@ -391,27 +391,6 @@ var Material = (function () {
     function Material(gl) {
         this._gl = gl;
     }
-    Object.defineProperty(Material.prototype, "verticesLocation", {
-        get: function () {
-            return this._verticesLocation;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Material.prototype, "modelviewLocation", {
-        get: function () {
-            return this._modelviewLocation;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Material.prototype, "projectLocation", {
-        get: function () {
-            return this._projectLocation;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Material.prototype.Load = function (vs, fs) {
         this._program = this.CreateProgram(vs, fs);
     };
@@ -421,10 +400,13 @@ var Material = (function () {
         this._gl.useProgram(this._program);
     };
     Material.prototype.GetAttribLocation = function (name) {
-        return this._gl.getAttribLocation(this._program, name);
+        var re = this._gl.getAttribLocation(this._program, name);
+        this._gl.enableVertexAttribArray(re);
+        return re;
     };
     Material.prototype.GetUniformLocation = function (name) {
-        return this._gl.getUniformLocation(this._program, name);
+        var re = this._gl.getUniformLocation(this._program, name);
+        return re;
     };
     Material.prototype.CreateVertexShader = function (str) {
         var shader = this._gl.createShader(this._gl.VERTEX_SHADER);
@@ -525,6 +507,8 @@ var MeshRender = (function () {
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("aVertexPosition"), 3, this._gl.FLOAT, false, 0, 0);
         this._gl.uniformMatrix4fv(this.material.GetUniformLocation("uMVMatrix"), false, this.transform.GetModelMatrix().ToFloat32Array());
         this._gl.uniformMatrix4fv(this.material.GetUniformLocation("uPMatrix"), false, this.camera.GetProjectMatrix().ToFloat32Array());
+        var re = this._gl.getBufferParameter(this._gl.ARRAY_BUFFER, this._gl.BUFFER_SIZE);
+        console.log(re);
         this._gl.drawArrays(this._gl.TRIANGLES, 0, this.mesh.vertices.length);
     };
     return MeshRender;
@@ -573,11 +557,11 @@ function OnLoadShader(vs, fs) {
     var f = 0;
     setInterval(function () {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        f += 0.03;
+        f += 1;
         transform.position = new Vector3(-0.5);
         transform.rotation = new Vector3(0, f, 0);
         render.Draw();
-    }, 16);
+    }, 1000);
 }
 /**
  * FileLoader
