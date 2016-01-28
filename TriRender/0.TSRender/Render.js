@@ -304,7 +304,7 @@ var Matrix4x4 = (function () {
         re.m33 = 1;
         return re;
     };
-    //TODO
+    //需要优化
     Matrix4x4.RotationFromEuler = function (r) {
         var mtxRotateX = Matrix4x4.RotationFromEulerX(r.x);
         var mtxRotateY = Matrix4x4.RotationFromEulerY(r.y);
@@ -337,11 +337,48 @@ var Matrix4x4 = (function () {
     };
     //TODO
     Matrix4x4.Perspective = function (fov, aspect, zNear, zFar) {
-        return Matrix4x4.identity;
+        var halfAngle = fov * Math.PI / 180 / 2;
+        var halfW = Math.tan(halfAngle) * zNear;
+        var halfH = halfW / aspect;
+        var re = new Matrix4x4();
+        re.m00 = zNear / halfW;
+        re.m01 = 0;
+        re.m02 = 0;
+        re.m03 = 0;
+        re.m10 = 0;
+        re.m11 = zNear / halfH;
+        re.m12 = 0;
+        re.m13 = 0;
+        re.m20 = 0;
+        re.m21 = 0;
+        re.m22 = zFar / (zFar - zNear);
+        re.m23 = -zFar * zNear / (zFar - zNear);
+        re.m30 = 0;
+        re.m31 = 0;
+        re.m32 = 0;
+        re.m33 = 1;
+        return re;
     };
     //TODO
     Matrix4x4.Ortho = function (left, right, bottom, top, zNear, zFar) {
-        return Matrix4x4.identity;
+        var re = new Matrix4x4();
+        re.m00 = 1;
+        re.m01 = 0;
+        re.m02 = 0;
+        re.m03 = 0;
+        re.m10 = 0;
+        re.m11 = 1;
+        re.m12 = 0;
+        re.m13 = 0;
+        re.m20 = 0;
+        re.m21 = 0;
+        re.m22 = 1;
+        re.m23 = 0;
+        re.m30 = 0;
+        re.m31 = 0;
+        re.m32 = 0;
+        re.m33 = 1;
+        return re;
     };
     return Matrix4x4;
 })();
@@ -407,6 +444,10 @@ var Material = (function () {
     Material.prototype.GetUniformLocation = function (name) {
         var re = this._gl.getUniformLocation(this._program, name);
         return re;
+    };
+    Material.prototype.SetUniformMatrix4fv = function (name, mtx) {
+        var uniformLocation = this.GetUniformLocation(name);
+        this._gl.uniformMatrix4fv(uniformLocation, false, mtx.ToFloat32Array());
     };
     Material.prototype.CreateVertexShader = function (str) {
         var shader = this._gl.createShader(this._gl.VERTEX_SHADER);
@@ -487,10 +528,27 @@ var Camera = (function () {
     function Camera() {
     }
     Camera.prototype.GetViewMatrix = function () {
-        return Matrix4x4.identity;
+        var re = new Matrix4x4();
+        re.m00 = 1;
+        re.m01 = 0;
+        re.m02 = 0;
+        re.m03 = 0;
+        re.m10 = 0;
+        re.m11 = 1;
+        re.m12 = 0;
+        re.m13 = 0;
+        re.m20 = 0;
+        re.m21 = 0;
+        re.m22 = 1;
+        re.m23 = 0;
+        re.m30 = 0;
+        re.m31 = 0;
+        re.m32 = 0;
+        re.m33 = 1;
+        return re;
     };
     Camera.prototype.GetProjectMatrix = function () {
-        return Matrix4x4.identity;
+        return Matrix4x4.Perspective(this.fov, this.aspect, this.near, this.far);
     };
     return Camera;
 })();
@@ -505,10 +563,10 @@ var MeshRender = (function () {
         this.material.Use();
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.mesh.GetVerticesBuffer());
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("aVertexPosition"), 3, this._gl.FLOAT, false, 0, 0);
-        this._gl.uniformMatrix4fv(this.material.GetUniformLocation("uMVMatrix"), false, this.transform.GetModelMatrix().ToFloat32Array());
-        this._gl.uniformMatrix4fv(this.material.GetUniformLocation("uPMatrix"), false, this.camera.GetProjectMatrix().ToFloat32Array());
-        var re = this._gl.getBufferParameter(this._gl.ARRAY_BUFFER, this._gl.BUFFER_SIZE);
-        console.log(re);
+        this.material.SetUniformMatrix4fv("uMtxModel", this.transform.GetModelMatrix());
+        this.material.SetUniformMatrix4fv("uMtxView", this.camera.GetViewMatrix());
+        //this.material.SetUniformMatrix4fv("uMtxProject", this.camera.GetProjectMatrix());
+        this.material.SetUniformMatrix4fv("uMtxProject", Matrix4x4.identity);
         this._gl.drawArrays(this._gl.TRIANGLES, 0, this.mesh.vertices.length);
     };
     return MeshRender;
@@ -542,26 +600,39 @@ function OnLoadShader(vs, fs) {
     var gl = Context.gl;
     var mat = new Material(gl);
     mat.Load(vs, fs);
-    mat.Use();
     var mesh = new Mesh(gl);
-    mesh.vertices = [new Vector3(), new Vector3(0.5, 0, 0), new Vector3(0, 0.5, 0)];
+    mesh.vertices = [new Vector3(), new Vector3(0.5, 0, -3), new Vector3(0, 0.5, 3)];
     mesh.triangles = [0, 1, 2];
     mesh.Load();
     var camera = new Camera();
+    camera.aspect = 1;
+    camera.fov = 90;
+    camera.near = 1;
+    camera.far = 10;
     var transform = new Transform();
     var render = new MeshRender(gl);
     render.mesh = mesh;
     render.camera = camera;
     render.material = mat;
     render.transform = transform;
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    render.Draw();
+    /*
     var f = 0;
-    setInterval(function () {
+    
+    setInterval(function(){
+        
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        f += 1;
+        
+        f += 0.1;
+        
         transform.position = new Vector3(-0.5);
         transform.rotation = new Vector3(0, f, 0);
+        
         render.Draw();
-    }, 1000);
+        
+    }, 16);
+    */
 }
 /**
  * FileLoader
@@ -578,27 +649,11 @@ var FileLoader = (function () {
         request.open("GET", url, true);
         request.send(null);
     };
+    FileLoader.Load = function (urls) {
+    };
     return FileLoader;
 })();
 function TestDraw() {
-    /*
-    var vs = "attribute vec3 aVertexPosition;\
-            uniform mat4 uMVMatrix;\
-            uniform mat4 uPMatrix;\
-            varying vec4 vColor;\
-            void main(void) {\
-            gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\
-            vColor = vec4(1,0,0,1);\
-        }";
-        
-    var fs = 'precision mediump float;\
-            varying vec4 vColor;\
-void main(void) {\
-    gl_FragColor = vColor;\
-}';
-    
-    OnLoadShader(vs, fs);
-    */
     var vsLoader = new FileLoader();
     vsLoader.Load("diff.vs", function (vstext) {
         var fsLoader = new FileLoader();
