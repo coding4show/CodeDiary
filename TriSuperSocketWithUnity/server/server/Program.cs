@@ -54,7 +54,7 @@ namespace server
 
         static void AppServer_NewRequestReceived (AppSession session, SuperSocket.SocketBase.Protocol.StringRequestInfo requestInfo)
         {
-            Console.WriteLine("AppServer_NewRequestReceived " + session.SessionID + " " + requestInfo);
+            Console.WriteLine("AppServer_NewRequestReceived " + session.SessionID + " " + requestInfo.Key + ":" + string.Concat(requestInfo.Parameters));
         }
     }
 }
