@@ -1,0 +1,11 @@
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/obj/x86/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/bin/Debug/server.exe.mdb
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/bin/Debug/server.exe
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/obj/x86/Debug/server.exe
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/obj/x86/Debug/server.exe.mdb
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/bin/Debug/log4net.dll
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/bin/Debug/SuperSocket.Common.dll
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/bin/Debug/SuperSocket.SocketBase.dll
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/bin/Debug/SuperSocket.Facility.dll
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/bin/Debug/SuperSocket.SocketEngine.dll
+/Users/linn/work/github/CodeDiary/TriSuperSocketWithUnity/server/server/bin/Debug/SuperSocket.SocketService.exe
