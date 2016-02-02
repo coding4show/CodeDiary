@@ -215,7 +215,7 @@ class Matrix4x4
         var mtxTranslation = Matrix4x4.Translation(pos);
         var mtxRotation = Matrix4x4.RotationFromEuler(r);
         var mtxScale = Matrix4x4.Scale(s); 
-        return Matrix4x4.MultiplyMatrix4x4(Matrix4x4.MultiplyMatrix4x4(mtxRotation, mtxScale), mtxTranslation);
+        return Matrix4x4.MultiplyMatrix4x4(Matrix4x4.MultiplyMatrix4x4(mtxTranslation, mtxRotation), mtxScale);
     }
     
     static Translation(tr: Vector3): Matrix4x4
