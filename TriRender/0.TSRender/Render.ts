@@ -158,6 +158,16 @@ class Matrix4x4
         return re;
     }
     
+    GetTranspose(): Matrix4x4
+    {
+        var re = new Matrix4x4();
+        re.m00 = this.m00; re.m01 = this.m00; re.m02 = this.m20; re.m03 = this.m30; 
+        re.m10 = this.m01; re.m11 = this.m11; re.m12 = this.m21; re.m13 = this.m31; 
+        re.m20 = this.m02; re.m21 = this.m12; re.m22 = this.m22; re.m23 = this.m32; 
+        re.m30 = this.m03; re.m31 = this.m13; re.m32 = this.m23; re.m33 = this.m33; 
+        return re;
+    }
+    
     static get identity()
     {
         var re = new Matrix4x4();
@@ -288,14 +298,16 @@ class Matrix4x4
     static Perspective(fov: number, aspect: number, zNear: number, zFar: number): Matrix4x4
     {
         var halfAngle = fov * Math.PI / 180 / 2; 
-        var halfW = Math.tan(halfAngle) * zNear;
-        var halfH = halfW / aspect;
+        
+        var cot = 1/Math.tan(halfAngle);
         var re = new Matrix4x4();
         
-        re.m00 = zNear/halfW; re.m01 = 0; re.m02 = 0; re.m03 = 0;
-        re.m10 = 0; re.m11 = zNear/halfH; re.m12 = 0; re.m13 = 0;
-        re.m20 = 0; re.m21 = 0; re.m22 = zFar/(zFar-zNear); re.m23 = -zFar*zNear/(zFar-zNear);
-        re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        re.m00 = cot/aspect; re.m01 = 0; re.m02 = 0; re.m03 = 0;
+        re.m10 = 0; re.m11 = cot; re.m12 = 0; re.m13 = 0;
+        re.m20 = 0; re.m21 = 0; re.m22 = (zFar+zNear)/(zFar-zNear); re.m23 = -zFar*zNear/(zFar-zNear);
+        re.m30 = 0; re.m31 = 0; re.m32 = -1; re.m33 = 1;
+        //re.m20 = 0; re.m21 = 0; re.m22 = (zFar+zNear)/(zFar-zNear); re.m23 = -1;
+        //re.m30 = 0; re.m31 = 0; re.m32 = -zFar*zNear/(zFar-zNear); re.m33 = 1;
         
         return re;
     }
@@ -526,7 +538,11 @@ class Mesh
  */
 class Camera
 {
-    transform: Transform;
+    right: Vector3;
+    up: Vector3;
+    look: Vector3;
+    
+    
     far: number;
     near: number;
     fov: number;
@@ -577,7 +593,6 @@ class MeshRender
         this.material.SetUniformMatrix4fv("uMtxModel", this.transform.GetModelMatrix());
         this.material.SetUniformMatrix4fv("uMtxView", this.camera.GetViewMatrix());
         this.material.SetUniformMatrix4fv("uMtxProject", this.camera.GetProjectMatrix());
-        //this.material.SetUniformMatrix4fv("uMtxProject", Matrix4x4.identity);
         
         this._gl.drawArrays(this._gl.TRIANGLES, 0, this.mesh.vertices.length);
     }
@@ -625,18 +640,18 @@ function OnLoadShader(vs: string, fs: string)
     mat.Load(vs, fs);
     
     var mesh = new Mesh(gl);
-    mesh.vertices = [new Vector3(-1, -1, 0), new Vector3(-1, 1, 0), new Vector3(1, 1, 1)];
+    mesh.vertices = [new Vector3(-1, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1)];
     mesh.triangles = [0, 1, 2];
     mesh.Load();
     
     var camera = new Camera();
     camera.aspect = 1;
-    camera.fov = 90;
-    camera.near = 0.5;
+    camera.fov = 150;
+    camera.near = 0.1;
     camera.far = 100;
     
     var transform = new Transform();
-    //transform.position = new Vector3(0, 0, -0.5);
+    transform.position = new Vector3(0, 0.2, 0.5);
     transform.position = Vector3.zero;
     transform.rotation = Vector3.zero;
     
@@ -649,7 +664,6 @@ function OnLoadShader(vs: string, fs: string)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     render.Draw();
     
-    /*
     var f = 0;
     
     setInterval(function(){
@@ -658,13 +672,12 @@ function OnLoadShader(vs: string, fs: string)
         
         f += 0.1;
         
-        transform.position = new Vector3(-0.5);
-        transform.rotation = new Vector3(0, f, 0);
+        transform.position = new Vector3(0, 0, -4);
+        transform.rotation = new Vector3(f, 0, 0);
         
         render.Draw();
         
     }, 16);
-    */
 }
 
 /**
