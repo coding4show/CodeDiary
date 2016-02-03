@@ -294,7 +294,6 @@ class Matrix4x4
         return re;
     }
     
-    //TODO
     static Perspective(fov: number, aspect: number, zNear: number, zFar: number): Matrix4x4
     {
         var halfAngle = fov * Math.PI / 180 / 2; 
@@ -306,8 +305,6 @@ class Matrix4x4
         re.m10 = 0; re.m11 = cot; re.m12 = 0; re.m13 = 0;
         re.m20 = 0; re.m21 = 0; re.m22 = (zFar+zNear)/(zFar-zNear); re.m23 = -zFar*zNear/(zFar-zNear);
         re.m30 = 0; re.m31 = 0; re.m32 = -1; re.m33 = 1;
-        //re.m20 = 0; re.m21 = 0; re.m22 = (zFar+zNear)/(zFar-zNear); re.m23 = -1;
-        //re.m30 = 0; re.m31 = 0; re.m32 = -zFar*zNear/(zFar-zNear); re.m33 = 1;
         
         return re;
     }
@@ -538,26 +535,35 @@ class Mesh
  */
 class Camera
 {
-    right: Vector3;
-    up: Vector3;
-    look: Vector3;
-    
+    eye: Vector3;
+    target: Vector3;
+    top: Vector3;
     
     far: number;
     near: number;
     fov: number;
     aspect: number;
     
+    GetEyeTargetUp(eye: Vector3, target: Vector3, top: Vector3)
+    {
+        var look = Vector3.Subtract(target, eye);
+        var right = Vector3.Cross(look, top);
+        var up = Vector3.Cross(right, look);
+        
+        var re = new Matrix4x4();
+        re.m00 = right.x; re.m01 = up.x; re.m02 = look.x; re.m03 = 0;
+        re.m10 = right.y; re.m11 = up.y; re.m12 = look.y; re.m13 = 0;
+        re.m20 = right.z; re.m21 = up.z; re.m22 = look.z; re.m23 = 0;
+        re.m30 = -Vector3.Dot(right, eye); 
+        re.m31 = -Vector3.Dot(up, eye); 
+        re.m32 = -Vector3.Dot(look, eye); 
+        re.m33 = 1;
+        return re;
+    }
+    
     GetViewMatrix(): Matrix4x4
     {
-        var re = new Matrix4x4();
-        
-        re.m00 = 1; re.m01 = 0; re.m02 = 0; re.m03 = 0;
-        re.m10 = 0; re.m11 = 1; re.m12 = 0; re.m13 = 0;
-        re.m20 = 0; re.m21 = 0; re.m22 = 1; re.m23 = 0;
-        re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
-        
-        return re;
+        return this.GetEyeTargetUp(this.eye, this.target, this.top);
     }
     
     GetProjectMatrix(): Matrix4x4
@@ -640,20 +646,21 @@ function OnLoadShader(vs: string, fs: string)
     mat.Load(vs, fs);
     
     var mesh = new Mesh(gl);
-    mesh.vertices = [new Vector3(-1, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1)];
+    mesh.vertices = [new Vector3(0, 0, 0), new Vector3(0.75, 0, 0), new Vector3(0, 0, -1)];
     mesh.triangles = [0, 1, 2];
     mesh.Load();
     
     var camera = new Camera();
     camera.aspect = 1;
-    camera.fov = 150;
-    camera.near = 0.1;
+    camera.fov = 90;
+    camera.near = 0.2;
     camera.far = 100;
     
+    camera.eye = new Vector3(0, 0, -5);
+    camera.target = Vector3.zero;
+    camera.top = Vector3.up;
+    
     var transform = new Transform();
-    transform.position = new Vector3(0, 0.2, 0.5);
-    transform.position = Vector3.zero;
-    transform.rotation = Vector3.zero;
     
     var render = new MeshRender(gl);
     render.mesh = mesh;
@@ -661,8 +668,6 @@ function OnLoadShader(vs: string, fs: string)
     render.material = mat;
     render.transform = transform;
     
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    render.Draw();
     
     var f = 0;
     
@@ -670,10 +675,14 @@ function OnLoadShader(vs: string, fs: string)
         
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         
-        f += 0.1;
+        f += 0.02;
+        if (f > 5){
+            f = 0;
+        }
         
-        transform.position = new Vector3(0, 0, -4);
-        transform.rotation = new Vector3(f, 0, 0);
+        transform.scale = Vector3.one;
+        transform.position = new Vector3(0, -0.5, -2 - f);
+        transform.rotation = new Vector3(0, 0, 0);
         
         render.Draw();
         
