@@ -644,11 +644,11 @@ var MeshRender = (function () {
     MeshRender.prototype.Draw = function () {
         this.material.Use();
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.mesh.GetVerticesBuffer());
-        this._gl.vertexAttribPointer(this.material.GetAttribLocation("aVertexPosition"), 3, this._gl.FLOAT, false, 0, 0);
+        this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this.mesh.GetTrianglesBuff());
-        this.material.SetUniformMatrix4fv("uMtxModel", this.transform.GetModelMatrix());
-        this.material.SetUniformMatrix4fv("uMtxView", this.camera.GetViewMatrix());
-        this.material.SetUniformMatrix4fv("uMtxProject", this.camera.GetProjectMatrix());
+        this.material.SetUniformMatrix4fv("uModelMatrix", this.transform.GetModelMatrix());
+        this.material.SetUniformMatrix4fv("uViewMatrix", this.camera.GetViewMatrix());
+        this.material.SetUniformMatrix4fv("uProjectMatrix", this.camera.GetProjectMatrix());
         this._gl.drawElements(this._gl.TRIANGLES, this.mesh.triangles.length, this._gl.UNSIGNED_SHORT, 0);
     };
     return MeshRender;
