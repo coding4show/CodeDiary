@@ -39,7 +39,17 @@ class Vector3
     
     Normalize() : void
     {
-        
+        var length = this.Length();
+        if (length > 0){
+            this.x /= length;
+            this.y /= length;
+            this.z /= length;
+        }
+        else{
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+        }
     }
     
     //
@@ -81,6 +91,16 @@ class Vector3
     //
     // Static Method
     //
+    static Normalize(a: Vector3) : Vector3
+    {
+        var length = a.Length();
+        if (length > 0){
+            return Vector3.ScaleS(a, 1/length);
+        }
+        else{
+            return Vector3.zero;
+        }
+    }
     static Add(a: Vector3, b: Vector3) : Vector3
     {
         return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
@@ -304,7 +324,7 @@ class Matrix4x4
         re.m00 = cot/aspect; re.m01 = 0; re.m02 = 0; re.m03 = 0;
         re.m10 = 0; re.m11 = cot; re.m12 = 0; re.m13 = 0;
         re.m20 = 0; re.m21 = 0; re.m22 = (zFar+zNear)/(zFar-zNear); re.m23 = -zFar*zNear/(zFar-zNear);
-        re.m30 = 0; re.m31 = 0; re.m32 = -1; re.m33 = 1;
+        re.m30 = 0; re.m31 = 0; re.m32 = 1; re.m33 = 1;
         
         return re;
     }
@@ -317,6 +337,21 @@ class Matrix4x4
         re.m00 = 1; re.m01 = 0; re.m02 = 0; re.m03 = 0;
         re.m10 = 0; re.m11 = 1; re.m12 = 0; re.m13 = 0;
         re.m20 = 0; re.m21 = 0; re.m22 = 1; re.m23 = 0;
+        re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
+        
+        return re;
+    }
+    
+    static LookAt(eye: Vector3, target: Vector3, top: Vector3)
+    {
+        var look = Vector3.Normalize(Vector3.Subtract(target, eye));
+        var right = Vector3.Normalize(Vector3.Cross(top, look));
+        var up = Vector3.Normalize(Vector3.Cross(look, right));
+        
+        var re = new Matrix4x4();
+        re.m00 = right.x; re.m01 = right.y; re.m02 = right.z; re.m03 = -Vector3.Dot(right, eye);
+        re.m10 = up.x; re.m11 = up.y; re.m12 = up.z; re.m13 = -Vector3.Dot(up, eye);
+        re.m20 = look.x; re.m21 = look.y; re.m22 = look.z; re.m23 = -Vector3.Dot(look, eye);
         re.m30 = 0; re.m31 = 0; re.m32 = 0; re.m33 = 1;
         
         return re;
@@ -501,6 +536,10 @@ class Mesh
         this._verticesBuff = this._gl.createBuffer();
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, this.Vector3Array2Float32Array(this.vertices), this._gl.STATIC_DRAW);
+        
+        this._trianglesBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
+        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, this.NumberArray2Uint16Array(this.triangles), this._gl.STATIC_DRAW);
     }
     
     Unload()
@@ -527,6 +566,47 @@ class Mesh
         }
         return re;
     }
+    
+    private NumberArray2Uint16Array(nums: number[])
+    {
+        var re = new Uint16Array(nums.length);
+        for (var i=0; i<nums.length; ++i)
+        {
+            re[i] = nums[i];
+        }
+        return re;
+    }
+    
+    
+    static CreateBox(gl: WebGLRenderingContext): Mesh
+    {
+        var mesh = new Mesh(gl);
+        mesh.vertices = [
+            new Vector3(-1, -1, 1),
+            new Vector3(-1, -1, -1),
+            new Vector3(1, -1, -1),
+            new Vector3(1, -1, 1),
+            new Vector3(-1, 1, 1),
+            new Vector3(-1, 1, -1),
+            new Vector3(1, 1, -1),
+            new Vector3(1, 1, 1),
+        ];
+        mesh.triangles = [
+            1, 2, 3,
+            7, 6, 5,
+            0, 4, 5,
+            1, 5, 6,
+            6, 7, 3,
+            0, 3, 7,
+            0, 1, 3,
+            4, 7, 5,
+            1, 0, 5,
+            2, 1, 6,
+            2, 6, 3,
+            4, 0, 7,
+        ];
+        return mesh;
+    }
 }
 
 
@@ -544,26 +624,9 @@ class Camera
     fov: number;
     aspect: number;
     
-    GetEyeTargetUp(eye: Vector3, target: Vector3, top: Vector3)
-    {
-        var look = Vector3.Subtract(target, eye);
-        var right = Vector3.Cross(look, top);
-        var up = Vector3.Cross(right, look);
-        
-        var re = new Matrix4x4();
-        re.m00 = right.x; re.m01 = up.x; re.m02 = look.x; re.m03 = 0;
-        re.m10 = right.y; re.m11 = up.y; re.m12 = look.y; re.m13 = 0;
-        re.m20 = right.z; re.m21 = up.z; re.m22 = look.z; re.m23 = 0;
-        re.m30 = -Vector3.Dot(right, eye); 
-        re.m31 = -Vector3.Dot(up, eye); 
-        re.m32 = -Vector3.Dot(look, eye); 
-        re.m33 = 1;
-        return re;
-    }
-    
     GetViewMatrix(): Matrix4x4
     {
-        return this.GetEyeTargetUp(this.eye, this.target, this.top);
+        return Matrix4x4.LookAt(this.eye, this.target, this.top);
     }
     
     GetProjectMatrix(): Matrix4x4
@@ -596,11 +659,13 @@ class MeshRender
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.mesh.GetVerticesBuffer());
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("aVertexPosition"), 3, this._gl.FLOAT, false, 0, 0);
         
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this.mesh.GetTrianglesBuff());
+        
         this.material.SetUniformMatrix4fv("uMtxModel", this.transform.GetModelMatrix());
         this.material.SetUniformMatrix4fv("uMtxView", this.camera.GetViewMatrix());
         this.material.SetUniformMatrix4fv("uMtxProject", this.camera.GetProjectMatrix());
         
-        this._gl.drawArrays(this._gl.TRIANGLES, 0, this.mesh.vertices.length);
+        this._gl.drawElements(this._gl.TRIANGLES, this.mesh.triangles.length, this._gl.UNSIGNED_SHORT, 0);
     }
 }
 
@@ -645,20 +710,25 @@ function OnLoadShader(vs: string, fs: string)
     var mat = new Material(gl);
     mat.Load(vs, fs);
     
+    /*
     var mesh = new Mesh(gl);
-    mesh.vertices = [new Vector3(0, 0, 0), new Vector3(0.75, 0, 0), new Vector3(0, 0, -1)];
+    mesh.vertices = [new Vector3(0, 0, 0), new Vector3(0.75, 0, 0), new Vector3(0, 1, 0)];
     mesh.triangles = [0, 1, 2];
+    mesh.Load();
+    */
+    
+    var mesh = Mesh.CreateBox(gl);
     mesh.Load();
     
     var camera = new Camera();
     camera.aspect = 1;
     camera.fov = 90;
-    camera.near = 0.2;
-    camera.far = 100;
+    camera.near = 0.1;
+    camera.far = 12;
     
-    camera.eye = new Vector3(0, 0, -5);
-    camera.target = Vector3.zero;
-    camera.top = Vector3.up;
+    camera.eye = new Vector3(-1, 1, -1 );
+    camera.target = new Vector3(0, 0, 1);
+    camera.top = new Vector3(0, 1, 0);
     
     var transform = new Transform();
     
@@ -676,16 +746,15 @@ function OnLoadShader(vs: string, fs: string)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         
         f += 0.02;
-        if (f > 5){
+        if (f > 15){
             f = 0;
         }
         
         transform.scale = Vector3.one;
-        transform.position = new Vector3(0, -0.5, -2 - f);
-        transform.rotation = new Vector3(0, 0, 0);
+        transform.position = new Vector3(0, 0, 3);
+        transform.rotation = new Vector3(0, f, 0);
         
         render.Draw();
-        
     }, 16);
 }
 
