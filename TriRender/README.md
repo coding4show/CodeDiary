@@ -6,7 +6,7 @@
 为什么会选择TypeScript和WebGL，首先是js方便开发和展示，只依赖浏览器，但是我个人不太喜欢没有静态类型检查的开发环境。
 其次希望能点亮js这个技能点，了解一下Unity之外的开发思路。
 
-目前接近完成的核心类有
+目前差不多完成的类有
 * Vector2/Vector3
 * Matrix4x4
 * Transform
@@ -14,12 +14,12 @@
 * Mesh
 * Mateirial
 
-Vector和Matrix是纯数学类；  
+Vector,Matrix是纯数学类；  
+Mesh持有顶点, 法线, UV
 Material负责载入编译shader，持有shader的导出变量(attribute, uniform)；  
 Transform负责建立场景树；  
 Camera负责相机相关；  
-
-未来打算添加Render类，来统一管理一次DrawCall中用到的对象，并且持有中间变量。
+Render类，统一管理一次DrawCall中用到的对象，并且持有中间变量。
 
 稍微更远一点的未来，在这个框架的基础上希望增加
 * obj模型文件解析和载入
