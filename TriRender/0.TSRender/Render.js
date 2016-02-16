@@ -460,6 +460,30 @@ var Color = (function () {
     return Color;
 })();
 /**
+ * Utils
+ */
+var Utils = (function () {
+    function Utils() {
+    }
+    Utils.ConvertVector3Array2Float32Array = function (vertices) {
+        var re = new Float32Array(vertices.length * 3);
+        for (var i = 0; i < vertices.length; ++i) {
+            re[i * 3 + 0] = vertices[i].x;
+            re[i * 3 + 1] = vertices[i].y;
+            re[i * 3 + 2] = vertices[i].z;
+        }
+        return re;
+    };
+    Utils.ConvertNumberArray2Uint16Array = function (nums) {
+        var re = new Uint16Array(nums.length);
+        for (var i = 0; i < nums.length; ++i) {
+            re[i] = nums[i];
+        }
+        return re;
+    };
+    return Utils;
+})();
+/**
  * Transform
  */
 var Transform = (function () {
@@ -556,42 +580,10 @@ var Material = (function () {
  * Mesh
  */
 var Mesh = (function () {
-    function Mesh(gl) {
-        this._gl = gl;
+    function Mesh() {
     }
-    Mesh.prototype.Load = function () {
-        this._verticesBuff = this._gl.createBuffer();
-        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
-        this._gl.bufferData(this._gl.ARRAY_BUFFER, this.Vector3Array2Float32Array(this.vertices), this._gl.STATIC_DRAW);
-        this._trianglesBuff = this._gl.createBuffer();
-        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
-        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, this.NumberArray2Uint16Array(this.triangles), this._gl.STATIC_DRAW);
-    };
-    Mesh.prototype.Unload = function () { };
-    Mesh.prototype.GetVerticesBuffer = function () {
-        return this._verticesBuff;
-    };
-    Mesh.prototype.GetTrianglesBuff = function () {
-        return this._trianglesBuff;
-    };
-    Mesh.prototype.Vector3Array2Float32Array = function (vertices) {
-        var re = new Float32Array(vertices.length * 3);
-        for (var i = 0; i < vertices.length; ++i) {
-            re[i * 3 + 0] = vertices[i].x;
-            re[i * 3 + 1] = vertices[i].y;
-            re[i * 3 + 2] = vertices[i].z;
-        }
-        return re;
-    };
-    Mesh.prototype.NumberArray2Uint16Array = function (nums) {
-        var re = new Uint16Array(nums.length);
-        for (var i = 0; i < nums.length; ++i) {
-            re[i] = nums[i];
-        }
-        return re;
-    };
-    Mesh.CreateBox = function (gl) {
-        var mesh = new Mesh(gl);
+    Mesh.CreateBox = function () {
+        var mesh = new Mesh();
         mesh.vertices = [
             new Vector3(-1, -1, 1),
             new Vector3(-1, -1, -1),
@@ -641,17 +633,90 @@ var MeshRender = (function () {
     function MeshRender(gl) {
         this._gl = gl;
     }
+    MeshRender.prototype.LoadMesh = function () {
+        this._verticesBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
+        this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector3Array2Float32Array(this.mesh.vertices), this._gl.STATIC_DRAW);
+        this._trianglesBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
+        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, Utils.ConvertNumberArray2Uint16Array(this.mesh.triangles), this._gl.STATIC_DRAW);
+    };
     MeshRender.prototype.Draw = function () {
         this.material.Use();
-        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.mesh.GetVerticesBuffer());
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
-        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this.mesh.GetTrianglesBuff());
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
         this.material.SetUniformMatrix4fv("uModelMatrix", this.transform.GetModelMatrix());
         this.material.SetUniformMatrix4fv("uViewMatrix", this.camera.GetViewMatrix());
         this.material.SetUniformMatrix4fv("uProjectMatrix", this.camera.GetProjectMatrix());
         this._gl.drawElements(this._gl.TRIANGLES, this.mesh.triangles.length, this._gl.UNSIGNED_SHORT, 0);
     };
     return MeshRender;
+})();
+/**
+ * WireFrameMeshRender
+ */
+var WireFrameMeshRender = (function () {
+    function WireFrameMeshRender(gl) {
+        this._gl = gl;
+    }
+    WireFrameMeshRender.prototype.ConvertTriangles2Lines = function (triangles) {
+        var lines = [];
+        var trianglesCount = Math.floor(triangles.length / 3);
+        for (var i = 0; i < trianglesCount; ++i) {
+            lines.push(triangles[i * 3]);
+            lines.push(triangles[i * 3 + 1]);
+            lines.push(triangles[i * 3 + 1]);
+            lines.push(triangles[i * 3 + 2]);
+            lines.push(triangles[i * 3 + 2]);
+            lines.push(triangles[i * 3]);
+        }
+        return lines;
+    };
+    WireFrameMeshRender.prototype.LoadMesh = function () {
+        this._verticesBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
+        this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector3Array2Float32Array(this.mesh.vertices), this._gl.STATIC_DRAW);
+        this._trianglesBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
+        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, Utils.ConvertNumberArray2Uint16Array(this.ConvertTriangles2Lines(this.mesh.triangles)), this._gl.STATIC_DRAW);
+    };
+    WireFrameMeshRender.prototype.Draw = function () {
+        this.material.Use();
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
+        this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
+        this.material.SetUniformMatrix4fv("uModelMatrix", this.transform.GetModelMatrix());
+        this.material.SetUniformMatrix4fv("uViewMatrix", this.camera.GetViewMatrix());
+        this.material.SetUniformMatrix4fv("uProjectMatrix", this.camera.GetProjectMatrix());
+        this._gl.drawElements(this._gl.LINES, this.mesh.triangles.length * 2, this._gl.UNSIGNED_SHORT, 0);
+    };
+    return WireFrameMeshRender;
+})();
+/**
+ * ObjectParser
+ */
+var ObjectParser = (function () {
+    function ObjectParser() {
+    }
+    ObjectParser.Parse = function (fileContent) {
+        var vertices = [];
+        var uvs = [];
+        var normals = [];
+        var triangles = [];
+        var lines = fileContent.split("\n");
+        lines.forEach(function (element) {
+            switch (element.charAt(0)) {
+                case 'v': break;
+                case 'vt': break;
+                case "vn": break;
+                case 'f': break;
+                default: break;
+            }
+        });
+        return null;
+    };
+    return ObjectParser;
 })();
 /**
  * Context
@@ -682,14 +747,7 @@ function OnLoadShader(vs, fs) {
     var gl = Context.gl;
     var mat = new Material(gl);
     mat.Load(vs, fs);
-    /*
-    var mesh = new Mesh(gl);
-    mesh.vertices = [new Vector3(0, 0, 0), new Vector3(0.75, 0, 0), new Vector3(0, 1, 0)];
-    mesh.triangles = [0, 1, 2];
-    mesh.Load();
-    */
-    var mesh = Mesh.CreateBox(gl);
-    mesh.Load();
+    var mesh = Mesh.CreateBox();
     var camera = new Camera();
     camera.aspect = 1;
     camera.fov = 90;
@@ -699,11 +757,13 @@ function OnLoadShader(vs, fs) {
     camera.target = new Vector3(0, 0, 1);
     camera.top = new Vector3(0, 1, 0);
     var transform = new Transform();
-    var render = new MeshRender(gl);
+    //var render = new MeshRender(gl);
+    var render = new WireFrameMeshRender(gl);
     render.mesh = mesh;
     render.camera = camera;
     render.material = mat;
     render.transform = transform;
+    render.LoadMesh();
     var f = 0;
     setInterval(function () {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

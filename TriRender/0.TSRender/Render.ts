@@ -378,6 +378,33 @@ class Color
         this.a = a;
     }
 }
+/**
+ * Utils 
+ */
+class Utils
+{
+    static ConvertVector3Array2Float32Array(vertices: Vector3[]) : Float32Array
+    {
+        var re = new Float32Array(vertices.length * 3);
+        for (var i=0; i<vertices.length; ++i)
+        {
+            re[i*3 + 0] = vertices[i].x;
+            re[i*3 + 1] = vertices[i].y;
+            re[i*3 + 2] = vertices[i].z;
+        }
+        return re;
+    }
+    
+    static ConvertNumberArray2Uint16Array(nums: number[]): Uint16Array
+    {
+        var re = new Uint16Array(nums.length);
+        for (var i=0; i<nums.length; ++i)
+        {
+            re[i] = nums[i];
+        }
+        return re;
+    }
+}
 
 /**
  * Transform
@@ -517,70 +544,19 @@ class Material {
  */
 class Mesh
 {
-    private _gl: WebGLRenderingContext;
-    private _verticesBuff: WebGLBuffer;
-    private _trianglesBuff: WebGLBuffer;
-    
     vertices : Vector3[];
     uv : Vector2[];
     colors : Color[];
     triangles : number[];
     
-    constructor(gl: WebGLRenderingContext)
+    constructor()
     {
-        this._gl = gl;
-    }
-    
-    Load()
-    {
-        this._verticesBuff = this._gl.createBuffer();
-        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
-        this._gl.bufferData(this._gl.ARRAY_BUFFER, this.Vector3Array2Float32Array(this.vertices), this._gl.STATIC_DRAW);
         
-        this._trianglesBuff = this._gl.createBuffer();
-        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
-        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, this.NumberArray2Uint16Array(this.triangles), this._gl.STATIC_DRAW);
     }
     
-    Unload()
-    {}
-    
-    GetVerticesBuffer(): WebGLBuffer
+    static CreateBox(): Mesh
     {
-        return this._verticesBuff;
-    }
-    
-    GetTrianglesBuff(): WebGLBuffer
-    {
-        return this._trianglesBuff;
-    }
-    
-    private Vector3Array2Float32Array(vertices: Vector3[]) : Float32Array
-    {
-        var re = new Float32Array(vertices.length * 3);
-        for (var i=0; i<vertices.length; ++i)
-        {
-            re[i*3 + 0] = vertices[i].x;
-            re[i*3 + 1] = vertices[i].y;
-            re[i*3 + 2] = vertices[i].z;
-        }
-        return re;
-    }
-    
-    private NumberArray2Uint16Array(nums: number[])
-    {
-        var re = new Uint16Array(nums.length);
-        for (var i=0; i<nums.length; ++i)
-        {
-            re[i] = nums[i];
-        }
-        return re;
-    }
-    
-    
-    static CreateBox(gl: WebGLRenderingContext): Mesh
-    {
-        var mesh = new Mesh(gl);
+        var mesh = new Mesh();
         mesh.vertices = [
             new Vector3(-1, -1, 1),
             new Vector3(-1, -1, -1),
@@ -641,6 +617,8 @@ class Camera
 class MeshRender
 {
     private _gl: WebGLRenderingContext;
+    private _verticesBuff: WebGLBuffer;
+    private _trianglesBuff: WebGLBuffer;
     
     mesh : Mesh;
     material : Material;
@@ -652,20 +630,122 @@ class MeshRender
         this._gl = gl;
     }
     
+    LoadMesh()
+    {
+        this._verticesBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
+        this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector3Array2Float32Array(this.mesh.vertices), this._gl.STATIC_DRAW);
+        
+        this._trianglesBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
+        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, Utils.ConvertNumberArray2Uint16Array(this.mesh.triangles), this._gl.STATIC_DRAW);
+    }
+    
     Draw()
     {
         this.material.Use();
         
-        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this.mesh.GetVerticesBuffer());
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
         
-        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this.mesh.GetTrianglesBuff());
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
         
         this.material.SetUniformMatrix4fv("uModelMatrix", this.transform.GetModelMatrix());
         this.material.SetUniformMatrix4fv("uViewMatrix", this.camera.GetViewMatrix());
         this.material.SetUniformMatrix4fv("uProjectMatrix", this.camera.GetProjectMatrix());
         
         this._gl.drawElements(this._gl.TRIANGLES, this.mesh.triangles.length, this._gl.UNSIGNED_SHORT, 0);
+    }
+}
+
+/**
+ * WireFrameMeshRender
+ */
+class WireFrameMeshRender {
+    private _gl: WebGLRenderingContext;
+    private _verticesBuff: WebGLBuffer;
+    private _trianglesBuff: WebGLBuffer;
+    
+    mesh : Mesh;
+    material : Material;
+    transform : Transform;
+    camera : Camera;
+    
+    constructor(gl: WebGLRenderingContext)
+    {
+        this._gl = gl;
+    }
+    
+    ConvertTriangles2Lines(triangles: number[]): number[]
+    {
+        var lines: number[] = [];
+        var trianglesCount = Math.floor(triangles.length/3);
+        for (var i=0; i<trianglesCount; ++i)
+        {
+            lines.push(triangles[i * 3]);
+            lines.push(triangles[i * 3 + 1]);
+            
+            lines.push(triangles[i * 3 + 1]);
+            lines.push(triangles[i * 3 + 2]);
+            
+            lines.push(triangles[i * 3 + 2]);
+            lines.push(triangles[i * 3]);
+        }
+        return lines;
+    }
+    
+    LoadMesh()
+    {
+        this._verticesBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
+        this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector3Array2Float32Array(this.mesh.vertices), this._gl.STATIC_DRAW);
+        
+        this._trianglesBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
+        this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, Utils.ConvertNumberArray2Uint16Array(this.ConvertTriangles2Lines(this.mesh.triangles)), this._gl.STATIC_DRAW);
+    }
+    
+    Draw()
+    {
+        this.material.Use();
+        
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
+        this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
+        
+        this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
+        
+        this.material.SetUniformMatrix4fv("uModelMatrix", this.transform.GetModelMatrix());
+        this.material.SetUniformMatrix4fv("uViewMatrix", this.camera.GetViewMatrix());
+        this.material.SetUniformMatrix4fv("uProjectMatrix", this.camera.GetProjectMatrix());
+        
+        this._gl.drawElements(this._gl.LINES, this.mesh.triangles.length * 2, this._gl.UNSIGNED_SHORT, 0);
+    }
+}
+
+/**
+ * ObjectParser
+ */
+class ObjectParser 
+{
+    static Parse(fileContent: string): Mesh
+    {
+        var vertices: Vector3[] = [];
+        var uvs: number[] = [];
+        var normals: Vector3[] = [];
+        var triangles: number[] = [];
+        
+        var lines = fileContent.split("\n");
+        lines.forEach(element => {
+            switch(element.charAt(0))
+            {
+                case 'v':break;
+                case 'vt':break;
+                case "vn":break;
+                case 'f':break;
+                default:break;
+            }
+        });
+        return null;
     }
 }
 
@@ -710,15 +790,7 @@ function OnLoadShader(vs: string, fs: string)
     var mat = new Material(gl);
     mat.Load(vs, fs);
     
-    /*
-    var mesh = new Mesh(gl);
-    mesh.vertices = [new Vector3(0, 0, 0), new Vector3(0.75, 0, 0), new Vector3(0, 1, 0)];
-    mesh.triangles = [0, 1, 2];
-    mesh.Load();
-    */
-    
-    var mesh = Mesh.CreateBox(gl);
-    mesh.Load();
+    var mesh = Mesh.CreateBox();
     
     var camera = new Camera();
     camera.aspect = 1;
@@ -732,12 +804,13 @@ function OnLoadShader(vs: string, fs: string)
     
     var transform = new Transform();
     
-    var render = new MeshRender(gl);
+    //var render = new MeshRender(gl);
+    var render = new WireFrameMeshRender(gl);
     render.mesh = mesh;
     render.camera = camera;
     render.material = mat;
     render.transform = transform;
-    
+    render.LoadMesh();
     
     var f = 0;
     
