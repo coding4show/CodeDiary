@@ -721,35 +721,8 @@ class WireFrameMeshRender {
         this._gl.drawElements(this._gl.LINES, this.mesh.triangles.length * 2, this._gl.UNSIGNED_SHORT, 0);
     }
 }
-
-/**
- * ObjectParser
- */
-class ObjectParser 
-{
-    static Parse(fileContent: string): Mesh
-    {
-        var vertices: Vector3[] = [];
-        var uvs: number[] = [];
-        var normals: Vector3[] = [];
-        var triangles: number[] = [];
-        
-        var lines = fileContent.split("\n");
-        lines.forEach(element => {
-            switch(element.charAt(0))
-            {
-                case 'v':break;
-                case 'vt':break;
-                case "vn":break;
-                case 'f':break;
-                default:break;
-            }
-        });
-        return null;
-    }
-}
-
-/**
+             
+/*            
  * Context
  */
 class Context

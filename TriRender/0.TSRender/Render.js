@@ -693,32 +693,7 @@ var WireFrameMeshRender = (function () {
     };
     return WireFrameMeshRender;
 })();
-/**
- * ObjectParser
- */
-var ObjectParser = (function () {
-    function ObjectParser() {
-    }
-    ObjectParser.Parse = function (fileContent) {
-        var vertices = [];
-        var uvs = [];
-        var normals = [];
-        var triangles = [];
-        var lines = fileContent.split("\n");
-        lines.forEach(function (element) {
-            switch (element.charAt(0)) {
-                case 'v': break;
-                case 'vt': break;
-                case "vn": break;
-                case 'f': break;
-                default: break;
-            }
-        });
-        return null;
-    };
-    return ObjectParser;
-})();
-/**
+/*
  * Context
  */
 var Context = (function () {
