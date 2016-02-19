@@ -585,20 +585,29 @@ class Mesh
     }
 }
 
+enum ProjectMode{
+    Perspective,
+    Ortho,
+}
 
 /**
  * Camera
  */
 class Camera
 {
+    mode: ProjectMode;
+    
     eye: Vector3;
     target: Vector3;
     top: Vector3;
     
     far: number;
     near: number;
-    fov: number;
+    
     aspect: number;
+    
+    orthoSize: number;
+    fov: number;
     
     GetViewMatrix(): Matrix4x4
     {
