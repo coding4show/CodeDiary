@@ -612,6 +612,11 @@ var Mesh = (function () {
     };
     return Mesh;
 })();
+var ProjectMode;
+(function (ProjectMode) {
+    ProjectMode[ProjectMode["Perspective"] = 0] = "Perspective";
+    ProjectMode[ProjectMode["Ortho"] = 1] = "Ortho";
+})(ProjectMode || (ProjectMode = {}));
 /**
  * Camera
  */

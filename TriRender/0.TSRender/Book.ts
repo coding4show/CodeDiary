@@ -9,6 +9,8 @@ class Book
     private _gl: WebGLRenderingContext;
     private render: MeshRender;
     private mesh: Mesh;
+    private camera: Camera;
+    private material: Material; 
     
     private width: number;
     private height: number;
@@ -50,14 +52,39 @@ class Book
         return mesh;
     }
     
-    CreateCamera(): Camera
+    private CreateCamera(): Camera
     {
-        return null;
+        var camera = new Camera();
+        camera.mode = ProjectMode.Ortho;
+        camera.near = -1000;
+        camera.far = 1000;
+        camera.aspect = this.width/this.height;
+        
+        camera.eye = Vector3.zero;
+        camera.target = new Vector3(0, 0, 1);
+        camera.top = new Vector3(0, 1, 0);
+        
+        camera.orthoSize = this.height/2;
+        return camera;
     }
     
     Load()
-    {}
+    {
+        this.material = new Material(this._gl);
+        //this.material.Load(vs, fs);
+        this.mesh = this.CreatePlane();
+        this.camera = this.CreateCamera();
+        
+        var render = new WireFrameMeshRender(this._gl);
+        render.mesh = this.mesh;
+        render.camera = this.camera;
+        
+        render.transform = new Transform();;
+        render.LoadMesh();
+    }
     
     Draw()
-    {}
+    {
+        this.render.Draw();
+    }
 }
