@@ -723,40 +723,6 @@ var Context = (function () {
     };
     return Context;
 })();
-function OnLoadShader(vs, fs) {
-    var gl = Context.gl;
-    var mat = new Material(gl);
-    mat.Load(vs, fs);
-    var mesh = Mesh.CreateBox();
-    var camera = new Camera();
-    camera.aspect = 1;
-    camera.fov = 90;
-    camera.near = 0.1;
-    camera.far = 12;
-    camera.eye = new Vector3(-1, 1, -1);
-    camera.target = new Vector3(0, 0, 1);
-    camera.top = new Vector3(0, 1, 0);
-    var transform = new Transform();
-    //var render = new MeshRender(gl);
-    var render = new WireFrameMeshRender(gl);
-    render.mesh = mesh;
-    render.camera = camera;
-    render.material = mat;
-    render.transform = transform;
-    render.LoadMesh();
-    var f = 0;
-    setInterval(function () {
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        f += 0.02;
-        if (f > 15) {
-            f = 0;
-        }
-        transform.scale = Vector3.one;
-        transform.position = new Vector3(0, 0, 3);
-        transform.rotation = new Vector3(0, f, 0);
-        render.Draw();
-    }, 16);
-}
 /**
  * FileLoader
  */
@@ -772,16 +738,5 @@ var FileLoader = (function () {
         request.open("GET", url, true);
         request.send(null);
     };
-    FileLoader.Load = function (urls) {
-    };
     return FileLoader;
 })();
-function TestDraw() {
-    var vsLoader = new FileLoader();
-    vsLoader.Load("diff.vs", function (vstext) {
-        var fsLoader = new FileLoader();
-        fsLoader.Load("diff.fs", function (fstext) {
-            OnLoadShader(vstext, fstext);
-        });
-    });
-}
