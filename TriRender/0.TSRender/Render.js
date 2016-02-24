@@ -397,21 +397,20 @@ var Matrix4x4 = (function () {
         re.m33 = 1;
         return re;
     };
-    //TODO
     Matrix4x4.Ortho = function (left, right, bottom, top, zNear, zFar) {
         var re = new Matrix4x4();
-        re.m00 = 1;
+        re.m00 = 2 / (right - left);
         re.m01 = 0;
         re.m02 = 0;
-        re.m03 = 0;
+        re.m03 = -(right + left) / (right - left);
         re.m10 = 0;
-        re.m11 = 1;
+        re.m11 = 2 / (top - bottom);
         re.m12 = 0;
-        re.m13 = 0;
+        re.m13 = -(top + bottom) / (top - bottom);
         re.m20 = 0;
         re.m21 = 0;
-        re.m22 = 1;
-        re.m23 = 0;
+        re.m22 = 2 / (zFar - zNear);
+        re.m23 = -(zFar + zNear) / (zFar - zNear);
         re.m30 = 0;
         re.m31 = 0;
         re.m32 = 0;
@@ -627,7 +626,14 @@ var Camera = (function () {
         return Matrix4x4.LookAt(this.eye, this.target, this.top);
     };
     Camera.prototype.GetProjectMatrix = function () {
-        return Matrix4x4.Perspective(this.fov, this.aspect, this.near, this.far);
+        if (this.mode == ProjectMode.Perspective) {
+            return Matrix4x4.Perspective(this.fov, this.aspect, this.near, this.far);
+        }
+        else {
+            var halfHeight = this.orthoSize / 2;
+            var halfWidth = halfHeight * this.aspect;
+            return Matrix4x4.Ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, this.near, this.far);
+        }
     };
     return Camera;
 })();

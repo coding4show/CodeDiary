@@ -17,6 +17,9 @@ class Book
     private row: number;
     private col: number;
     
+    vs: string;
+    fs: string;
+    
     constructor(gl: WebGLRenderingContext){
         this._gl = gl;
     }
@@ -70,17 +73,21 @@ class Book
     
     Load()
     {
-        this.material = new Material(this._gl);
-        //this.material.Load(vs, fs);
+        var material = new Material(this._gl);
+        material.Load(this.vs, this.fs);
+        this.material = material;
         this.mesh = this.CreatePlane();
         this.camera = this.CreateCamera();
         
-        var render = new WireFrameMeshRender(this._gl);
+        var render = new MeshRender(this._gl);
+        render.material = material;
         render.mesh = this.mesh;
         render.camera = this.camera;
         
         render.transform = new Transform();;
         render.LoadMesh();
+        
+        this.render = render;
     }
     
     Draw()
