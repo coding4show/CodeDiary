@@ -11,25 +11,33 @@ public class TestSSC : MonoBehaviour
     AsyncTcpSession session;
 	void Start () 
     {
+        Debug.Log("Start " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+
+        EasyClient<ResponseVO> client = new EasyClient<ResponseVO>();
+        client.Initialize(new ResponseReceiveFilter());
+
         System.Net.IPAddress ipaddr = IPAddress.Parse("127.0.0.1");
         System.Net.IPEndPoint ipep = new IPEndPoint(ipaddr, 1254);
-        session = new AsyncTcpSession(ipep);
-        session.Connect();
 
-        session.Connected += Session_Connected;
-
-//        var client = new EasyClient<MyPackage>();
-//        var filter = new MyFilter();
-//        client.Initialize(filter);
+        client.BeginConnect(ipep);
+        client.Connected += Client_Connected;
+        client.NewPackageReceived += Client_NewPackageReceived;
+        client.Error += Client_Error;
 	}
 
-    void Session_Connected (object sender, System.EventArgs e)
+    void Client_Error (object sender, SuperSocket.ClientEngine.ErrorEventArgs e)
     {
-        byte[] bytes = System.Text.ASCIIEncoding.ASCII.GetBytes("1 Hello, World!\r\n");
-        session.Send(bytes, 0, bytes.Length);
+        Debug.Log("Client_Error : " + e.Exception.ToString());
     }
 
-	void Update () {
-	
-	}
+    void Client_NewPackageReceived (object sender, PackageEventArgs<ResponseVO> e)
+    {
+        string msg = System.Text.Encoding.UTF8.GetString(e.Package.data);
+        Debug.Log("Client_NewPackageReceived " + msg);
+    }
+
+    void Client_Connected (object sender, System.EventArgs e)
+    {
+        Debug.Log("Client_Connected " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+    }
 }

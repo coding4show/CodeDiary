@@ -50,6 +50,9 @@
     <Reference Include="SuperSocket.SocketService">
       <HintPath>..\packages\SuperSocket.Engine.1.6.5.1\lib\net45\SuperSocket.SocketService.exe</HintPath>
     </Reference>
+    <Reference Include="SuperSocket.ProtoBase">
+      <HintPath>..\packages\SuperSocket.ProtoBase.1.7.0.4\lib\net35-client\SuperSocket.ProtoBase.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
