@@ -11,11 +11,13 @@
 			var canvas = document.getElementById("c");
             Context.InitGL(canvas);
             
+            var book;
+            
             var mep = new MultiEventProxy(["vs", "fs"], function(results){
                 
                 Context.gl.clear(Context.gl.COLOR_BUFFER_BIT | Context.gl.DEPTH_BUFFER_BIT);
                 
-                var book = new Book(Context.gl, canvas.width, canvas.height, 30, 40);
+                book = new Book(Context.gl, canvas.width, canvas.height, 30, 40);
                 book.vs = results["vs"];
                 book.fs = results["fs"];
                 
@@ -34,7 +36,15 @@
             });
                     
             $(document).mousemove(function(e){
-                $("span").text(e.pageX + ", " + e.pageY + ":" + e.which);
+                
+                $("span").text(e.pageX + ", " + e.pageY + ":" + e.which + " # " + canvas.offsetLeft + "," + canvas.offsetTop);
+                if (book){
+                    var cornerX = e.pageX - canvas.offsetLeft;
+                    var cornerY = canvas.height - (e.pageY - canvas.offsetTop);
+                    book.cornerX = cornerX;
+                    book.cornerY = cornerY;
+                    book.Draw();
+                }
             });
 		}
 	</script>

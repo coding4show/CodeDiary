@@ -533,6 +533,10 @@ var Material = (function () {
         var uniformLocation = this.GetUniformLocation(name);
         this._gl.uniformMatrix4fv(uniformLocation, false, mtx.ToFloat32Array());
     };
+    Material.prototype.SetUniform4f = function (name, x, y, z, w) {
+        var uniformLocation = this.GetUniformLocation(name);
+        this._gl.uniform4f(uniformLocation, x, y, z, w);
+    };
     Material.prototype.CreateVertexShader = function (str) {
         var shader = this._gl.createShader(this._gl.VERTEX_SHADER);
         if (this.CompileShader(shader, str)) {
@@ -653,7 +657,6 @@ var MeshRender = (function () {
         this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, Utils.ConvertNumberArray2Uint16Array(this.mesh.triangles), this._gl.STATIC_DRAW);
     };
     MeshRender.prototype.Draw = function () {
-        this.material.Use();
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
@@ -693,7 +696,6 @@ var WireFrameMeshRender = (function () {
         this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, Utils.ConvertNumberArray2Uint16Array(this.ConvertTriangles2Lines(this.mesh.triangles)), this._gl.STATIC_DRAW);
     };
     WireFrameMeshRender.prototype.Draw = function () {
-        this.material.Use();
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);

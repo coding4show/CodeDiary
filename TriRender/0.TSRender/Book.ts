@@ -21,6 +21,10 @@ class Book
     vs: string;
     fs: string;
     
+    //右下角位置, 相对于左下角
+    cornerX: number;
+    cornerY: number;
+    
     constructor(gl: WebGLRenderingContext, width: number, height: number, row: number, col: number){
         this._gl = gl;
         this.width = width;
@@ -98,6 +102,8 @@ class Book
     
     Draw()
     {
+        this.material.Use();
+        this.material.SetUniform4f("book", this.width, this.height, this.cornerX, this.cornerY);
         this.render.Draw();
     }
 }

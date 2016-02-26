@@ -17,6 +17,8 @@
             var mesh = Mesh.CreateBox();
             
             var camera = new Camera();
+            
+            camera.mode = ProjectMode.Perspective;
             camera.aspect = 1;
             camera.fov = 90;
             camera.near = 0.1;
@@ -51,6 +53,7 @@
                 transform.position = new Vector3(0, 0, 3);
                 transform.rotation = new Vector3(0, f, 0);
                 
+                render.material.Use();
                 render.Draw();
             }, 16);
         }

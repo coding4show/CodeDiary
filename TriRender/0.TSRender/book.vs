@@ -3,9 +3,7 @@ attribute vec3 atbColor;
 attribute vec3 atbNormal;
 attribute vec2 atbUV;
 
-
-const float width = 800.0;
-const float height = 600.0;
+uniform vec4 book; 
 
 uniform vec4 uLight;
 uniform mat4 uModelMatrix;
@@ -45,7 +43,7 @@ vec3 pagetrans(vec2 page, vec2 pos, vec2 curcorner)
 void main(void) {
     //Vertex的值从(0, 0)到(width, height)
     vec2 pos = vec2(atbPosition.x, atbPosition.y);
-    vec3 tmp = pagetrans(vec2(width, height), pos, vec2(0.5 * width, 0.5 * height)); 
+    vec3 tmp = pagetrans(vec2(book.x, book.y), pos, vec2(book.z, book.w)); 
     gl_Position = uProjectMatrix * uViewMatrix * uModelMatrix * vec4(tmp, 1.0);
     vColor = vec4(1,0,0,1);
 }

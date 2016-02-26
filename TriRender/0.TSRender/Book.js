@@ -65,6 +65,8 @@ var Book = (function () {
         this.render = render;
     };
     Book.prototype.Draw = function () {
+        this.material.Use();
+        this.material.SetUniform4f("book", this.width, this.height, this.cornerX, this.cornerY);
         this.render.Draw();
     };
     return Book;

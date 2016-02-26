@@ -484,6 +484,12 @@ class Material {
         this._gl.uniformMatrix4fv(uniformLocation, false, mtx.ToFloat32Array());
     }
     
+    SetUniform4f(name: string, x: number, y: number, z: number, w: number)
+    {
+        var uniformLocation = this.GetUniformLocation(name);
+        this._gl.uniform4f(uniformLocation, x, y, z, w);
+    }
+    
     private CreateVertexShader(str: string) : WebGLShader
 	{
 		var shader = this._gl.createShader(this._gl.VERTEX_SHADER);
@@ -658,8 +664,6 @@ class MeshRender
     
     Draw()
     {
-        this.material.Use();
-        
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
         
@@ -722,8 +726,6 @@ class WireFrameMeshRender {
     
     Draw()
     {
-        this.material.Use();
-        
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
         
