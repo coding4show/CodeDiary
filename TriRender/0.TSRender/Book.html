@@ -15,7 +15,7 @@
                 
                 Context.gl.clear(Context.gl.COLOR_BUFFER_BIT | Context.gl.DEPTH_BUFFER_BIT);
                 
-                var book = new Book(Context.gl, canvas.width, canvas.height, 10, 10);
+                var book = new Book(Context.gl, canvas.width, canvas.height, 30, 40);
                 book.vs = results["vs"];
                 book.fs = results["fs"];
                 
@@ -24,12 +24,12 @@
             });
             
             var vsLoader = new FileLoader();
-            vsLoader.Load("diff.vs", function(vstext){
+            vsLoader.Load("book.vs", function(vstext){
                 mep.Ready("vs", vstext);
             });   
             
             var fsLoader = new FileLoader();
-            fsLoader.Load("diff.fs", function(fstext){
+            fsLoader.Load("book.fs", function(fstext){
                 mep.Ready("fs", fstext);
             });
                     

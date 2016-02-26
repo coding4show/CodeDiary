@@ -37,8 +37,8 @@ class Book
         var segX = this.width/this.col;
         var segY = this.height/this.row;
         
-        for (var i = 0; i < this.col+1; i++) {
-            for (var j=0; j< this.row+1; j++){
+        for (var j=0; j< this.row+1; j++){
+            for (var i = 0; i < this.col+1; i++) {
                 var posX = segX * i;
                 var posY = segY * j;
                 mesh.vertices.push(new Vector3(posX, posY));
@@ -47,8 +47,8 @@ class Book
         
         //index
         mesh.triangles = [];
-        for (var i=0; i<this.col; i++){
-            for (var j=0; j<this.row; j++){
+        for (var j=0; j<this.row; j++){
+            for (var i=0; i<this.col; i++){
                 var leftTop = j * (this.col + 1) + i;
                 var leftBottom = leftTop + (this.col + 1);
                 var rightTop = leftTop + 1;
