@@ -3,8 +3,12 @@
  * Book.ts
  */
 var Book = (function () {
-    function Book(gl) {
+    function Book(gl, width, height, row, col) {
         this._gl = gl;
+        this.width = width;
+        this.height = height;
+        this.row = row;
+        this.col = col;
     }
     Book.prototype.CreatePlane = function () {
         var mesh = new Mesh();
@@ -22,8 +26,8 @@ var Book = (function () {
         mesh.triangles = [];
         for (var i = 0; i < this.col; i++) {
             for (var j = 0; j < this.row; j++) {
-                var leftTop = j * this.col + i;
-                var leftBottom = leftTop + this.col;
+                var leftTop = j * (this.col + 1) + i;
+                var leftBottom = leftTop + (this.col + 1);
                 var rightTop = leftTop + 1;
                 var rightBottom = leftBottom + 1;
                 mesh.triangles.push(leftTop, rightTop, rightBottom);
@@ -38,10 +42,10 @@ var Book = (function () {
         camera.near = -1000;
         camera.far = 1000;
         camera.aspect = this.width / this.height;
-        camera.eye = Vector3.zero;
-        camera.target = new Vector3(0, 0, 1);
+        camera.eye = new Vector3(this.width / 2, this.height / 2);
+        camera.target = Vector3.Add(camera.eye, new Vector3(0, 0, 1));
         camera.top = new Vector3(0, 1, 0);
-        camera.orthoSize = this.height / 2;
+        camera.orthoSize = this.height;
         return camera;
     };
     Book.prototype.Load = function () {
@@ -50,7 +54,8 @@ var Book = (function () {
         this.material = material;
         this.mesh = this.CreatePlane();
         this.camera = this.CreateCamera();
-        var render = new MeshRender(this._gl);
+        //var render = new MeshRender(this._gl);
+        var render = new WireFrameMeshRender(this._gl);
         render.material = material;
         render.mesh = this.mesh;
         render.camera = this.camera;
