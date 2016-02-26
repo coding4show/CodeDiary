@@ -15,18 +15,18 @@ var Book = (function () {
         mesh.vertices = [];
         var segX = this.width / this.col;
         var segY = this.height / this.row;
-        for (var j = 0; j < this.row + 1; j++) {
-            for (var i = 0; i < this.col + 1; i++) {
-                var posX = segX * i;
-                var posY = segY * j;
+        for (var rowIdx = 0; rowIdx < this.row + 1; rowIdx++) {
+            for (var colIdx = 0; colIdx < this.col + 1; colIdx++) {
+                var posX = segX * colIdx;
+                var posY = segY * rowIdx;
                 mesh.vertices.push(new Vector3(posX, posY));
             }
         }
         //index
         mesh.triangles = [];
-        for (var j = 0; j < this.row; j++) {
-            for (var i = 0; i < this.col; i++) {
-                var leftTop = j * (this.col + 1) + i;
+        for (var rowIdx = 0; rowIdx < this.row; rowIdx++) {
+            for (var colIdx = 0; colIdx < this.col; colIdx++) {
+                var leftTop = rowIdx * (this.col + 1) + colIdx;
                 var leftBottom = leftTop + (this.col + 1);
                 var rightTop = leftTop + 1;
                 var rightBottom = leftBottom + 1;
