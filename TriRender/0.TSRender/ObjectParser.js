@@ -37,16 +37,19 @@ var ObjectParser = (function () {
     ObjectParser.prototype.ParseElement = function (word) {
         var words = word.split("/");
         var posIndex = parseInt(words[0]);
-        this.vertices.push(this.vertexCache[posIndex]);
+        if (posIndex < 1 || posIndex > this.vertexCache.length) {
+            console.log("Error!");
+        }
+        this.vertices.push(this.vertexCache[posIndex - 1]);
         //uv
         if (words.length >= 2 && words[1].length > 0) {
             var uvIndex = parseInt(words[1]);
-            this.uvs.push(this.uvCache[uvIndex]);
+            this.uvs.push(this.uvCache[uvIndex - 1]);
         }
         //normal
         if (words.length >= 3 && words[2].length > 0) {
             var normalIndex = parseInt(words[2]);
-            this.normals.push(this.normalCache[normalIndex]);
+            this.normals.push(this.normalCache[normalIndex - 1]);
         }
     };
     //Ignore First Word
