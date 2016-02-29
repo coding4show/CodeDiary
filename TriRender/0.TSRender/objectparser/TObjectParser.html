@@ -2,19 +2,23 @@
 <html>
 
 <head>
-	<script type="text/javascript" src="Render.js"></script>
-    <script type="text/javascript" src="MultiEventProxy.js"></script>
+	<script type="text/javascript" src="../render/Render.js"></script>
+    <script type="text/javascript" src="../utils/MultiEventProxy.js"></script>
+    <script type="text/javascript" src="../objectparser/ObjectParser.js"></script>
 	<script type="text/javascript">
     
         function Draw(params){
             var vs = params["vs"];
             var fs = params["fs"];
             var gl = params["gl"];
+            var objtext = params["obj"];
 
             var mat = new Material(gl);
             mat.Load(vs, fs);
             
-            var mesh = Mesh.CreateBox();
+            //var mesh = Mesh.CreateBox();
+            var objParser = new ObjectParser();
+            var mesh = objParser.Parse(objtext);
             
             var camera = new Camera();
             
@@ -45,7 +49,7 @@
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
                 
                 f += 0.02;
-                if (f > 15){
+                if (f > 3.1415926 * 2){
                     f = 0;
                 }
                 
@@ -63,7 +67,7 @@
 			var canvas = document.getElementById("c");
             Context.InitGL(canvas);
             
-            var mep = new MultiEventProxy(["vs", "fs"], function(results){
+            var mep = new MultiEventProxy(["vs", "fs", "obj"], function(results){
                 results["gl"] = Context.gl;
                 Draw(results);
             });
@@ -76,6 +80,11 @@
             var fsLoader = new FileLoader();
             fsLoader.Load("diff.fs", function(fstext){
                 mep.Ready("fs", fstext);
+            });
+            
+            var objLoader = new FileLoader();
+            objLoader.Load("monkey.obj", function(objtext){
+                mep.Ready("obj", objtext);
             });
 		}
 	</script>

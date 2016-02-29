@@ -1,7 +1,7 @@
 /**
  * ObjectParser
  */
-/// <reference path="Render.ts" />
+/// <reference path="../render/Render.ts" />
 var ObjectParser = (function () {
     function ObjectParser() {
         //Cache

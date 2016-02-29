@@ -2,7 +2,7 @@
  * ObjectParser
  */
 
-/// <reference path="Render.ts" />
+/// <reference path="../render/Render.ts" />
 
 class ObjectParser 
 {
