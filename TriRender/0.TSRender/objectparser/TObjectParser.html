@@ -12,6 +12,7 @@
             var fs = params["fs"];
             var gl = params["gl"];
             var objtext = params["obj"];
+            var image = params["image"];
 
             var mat = new Material(gl);
             mat.Load(vs, fs);
@@ -42,6 +43,10 @@
             render.transform = transform;
             render.LoadMesh();
             
+            var texture = new Texture(gl);
+            texture.Load(image);
+            texture.Use();
+            
             var f = 0;
             
             setInterval(function(){
@@ -67,7 +72,7 @@
 			var canvas = document.getElementById("c");
             Context.InitGL(canvas);
             
-            var mep = new MultiEventProxy(["vs", "fs", "obj"], function(results){
+            var mep = new MultiEventProxy(["vs", "fs", "obj", "image"], function(results){
                 results["gl"] = Context.gl;
                 Draw(results);
             });
@@ -86,6 +91,11 @@
             objLoader.Load("monkey.obj", function(objtext){
                 mep.Ready("obj", objtext);
             });
+            
+            var image = new Image();
+            image.onload = function(){
+                mep.Ready("image", image);
+            }
 		}
 	</script>
 </head>
