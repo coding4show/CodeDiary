@@ -35,8 +35,8 @@
             
             var transform = new Transform();
             
-            //var render = new MeshRender(gl);
-            var render = new WireFrameMeshRender(gl);
+            var render = new MeshRender(gl);
+            //var render = new WireFrameMeshRender(gl);
             render.mesh = mesh;
             render.camera = camera;
             render.material = mat;
@@ -45,7 +45,6 @@
             
             var texture = new Texture(gl);
             texture.Load(image);
-            texture.Use();
             
             var f = 0;
             
@@ -93,6 +92,7 @@
             });
             
             var image = new Image();
+            image.src = "tex_land.png";
             image.onload = function(){
                 mep.Ready("image", image);
             }

@@ -443,6 +443,11 @@ class Texture
         this._gl = gl;
     }
     
+    get textureID()
+    {
+        return this._textureID;
+    }
+    
     Load(image: HTMLImageElement)
     {
         var gl = this._gl;
@@ -455,13 +460,6 @@ class Texture
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
-    
-    Use()
-    {
-        var gl = this._gl;
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this._texture);
-    }
 }
 
 /**
@@ -470,6 +468,7 @@ class Texture
 class Material {
     private _gl : WebGLRenderingContext;
     private _program : WebGLProgram;
+    private _textures = {}
     
     constructor(gl: WebGLRenderingContext)
     {
@@ -477,6 +476,17 @@ class Material {
     }
     
 	textures : Texture[];
+    Register(name: string, texture: Texture){
+        this._textures[name] = texture;
+    }
+    UseTextures(){
+        for (var textureName in this._textures) {
+            if (this._textures.hasOwnProperty(textureName)) {
+                var element = this._textures[textureName];
+                this._gl.uniform1i(this.GetUniformLocation(textureName), element);
+            }
+        }
+    }
     
     Load(vs: string, fs: string)
     {
@@ -518,6 +528,11 @@ class Material {
         this._gl.uniform4f(uniformLocation, x, y, z, w);
     }
     
+    SetUniformTexture(name: string, texture: Texture){
+        var uniformLocation = this.GetUniformLocation(name);
+        //this._gl.uniform1i(uniformLocation, texture);
+    }
+    
     private CreateVertexShader(str: string) : WebGLShader
 	{
 		var shader = this._gl.createShader(this._gl.VERTEX_SHADER);
@@ -555,8 +570,8 @@ class Material {
 
 	private CreateProgram(vs: string, fs: string) : WebGLProgram
 	{
-		var fragmentShader = this.CreateVertexShader(vs);
-		var vertexShader = this.CreateFragmentShader(fs);
+		var vertexShader = this.CreateVertexShader(vs);
+		var fragmentShader = this.CreateFragmentShader(fs);
 
         var shaderProgram = this._gl.createProgram();
         this._gl.attachShader(shaderProgram, vertexShader);
@@ -700,6 +715,8 @@ class MeshRender
         this.material.SetUniformMatrix4fv("uModelMatrix", this.transform.GetModelMatrix());
         this.material.SetUniformMatrix4fv("uViewMatrix", this.camera.GetViewMatrix());
         this.material.SetUniformMatrix4fv("uProjectMatrix", this.camera.GetProjectMatrix());
+        
+        
         
         this._gl.drawElements(this._gl.TRIANGLES, this.mesh.triangles.length, this._gl.UNSIGNED_SHORT, 0);
     }

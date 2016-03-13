@@ -504,6 +504,13 @@ var Texture = (function () {
     function Texture(gl) {
         this._gl = gl;
     }
+    Object.defineProperty(Texture.prototype, "textureID", {
+        get: function () {
+            return this._textureID;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Texture.prototype.Load = function (image) {
         var gl = this._gl;
         this._texture = gl.createTexture();
@@ -515,11 +522,6 @@ var Texture = (function () {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);
     };
-    Texture.prototype.Use = function () {
-        var gl = this._gl;
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this._texture);
-    };
     return Texture;
 })();
 /**
@@ -527,8 +529,20 @@ var Texture = (function () {
  */
 var Material = (function () {
     function Material(gl) {
+        this._textures = {};
         this._gl = gl;
     }
+    Material.prototype.Register = function (name, texture) {
+        this._textures[name] = texture;
+    };
+    Material.prototype.UseTextures = function () {
+        for (var textureName in this._textures) {
+            if (this._textures.hasOwnProperty(textureName)) {
+                var element = this._textures[textureName];
+                this._gl.uniform1i(this.GetUniformLocation(textureName), element);
+            }
+        }
+    };
     Material.prototype.Load = function (vs, fs) {
         this._program = this.CreateProgram(vs, fs);
     };
@@ -553,6 +567,10 @@ var Material = (function () {
     Material.prototype.SetUniform4f = function (name, x, y, z, w) {
         var uniformLocation = this.GetUniformLocation(name);
         this._gl.uniform4f(uniformLocation, x, y, z, w);
+    };
+    Material.prototype.SetUniformTexture = function (name, texture) {
+        var uniformLocation = this.GetUniformLocation(name);
+        //this._gl.uniform1i(uniformLocation, texture);
     };
     Material.prototype.CreateVertexShader = function (str) {
         var shader = this._gl.createShader(this._gl.VERTEX_SHADER);
@@ -582,8 +600,8 @@ var Material = (function () {
         return true;
     };
     Material.prototype.CreateProgram = function (vs, fs) {
-        var fragmentShader = this.CreateVertexShader(vs);
-        var vertexShader = this.CreateFragmentShader(fs);
+        var vertexShader = this.CreateVertexShader(vs);
+        var fragmentShader = this.CreateFragmentShader(fs);
         var shaderProgram = this._gl.createProgram();
         this._gl.attachShader(shaderProgram, vertexShader);
         this._gl.attachShader(shaderProgram, fragmentShader);
