@@ -13,9 +13,13 @@
             var gl = params["gl"];
             var objtext = params["obj"];
             var image = params["image"];
-
+            
+            var texture = new Texture(gl);
+            texture.Load(image);
+            
             var mat = new Material(gl);
             mat.Load(vs, fs);
+            mat.Register("uSampler", texture);
             
             //var mesh = Mesh.CreateBox();
             var objParser = new ObjectParser();
@@ -43,8 +47,7 @@
             render.transform = transform;
             render.LoadMesh();
             
-            var texture = new Texture(gl);
-            texture.Load(image);
+            
             
             var f = 0;
             

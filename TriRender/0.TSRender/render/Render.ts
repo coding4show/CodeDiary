@@ -394,6 +394,17 @@ class Utils
         return re;
     }
     
+    static ConvertVector2Array2Float32Array(vertices: Vector2[]) : Float32Array
+    {
+        var re = new Float32Array(vertices.length * 2);
+        for (var i=0; i<vertices.length; ++i)
+        {
+            re[i*2 + 0] = vertices[i].x;
+            re[i*2 + 1] = vertices[i].y;
+        }
+        return re;
+    }
+    
     static ConvertNumberArray2Uint16Array(nums: number[]): Uint16Array
     {
         var re = new Uint16Array(nums.length);
@@ -436,16 +447,15 @@ class Texture
 {
 	private _gl: WebGLRenderingContext;
     private _texture: WebGLTexture;
-    private _textureID: number;
     
     constructor(gl: WebGLRenderingContext)
     {
         this._gl = gl;
     }
     
-    get textureID()
+    get texture(): WebGLTexture
     {
-        return this._textureID;
+        return this._texture;
     }
     
     Load(image: HTMLImageElement)
@@ -480,10 +490,14 @@ class Material {
         this._textures[name] = texture;
     }
     UseTextures(){
+        var gl : WebGLRenderingContext = this._gl;
+        var index = 0;
         for (var textureName in this._textures) {
             if (this._textures.hasOwnProperty(textureName)) {
-                var element = this._textures[textureName];
-                this._gl.uniform1i(this.GetUniformLocation(textureName), element);
+                var texture: Texture = this._textures[textureName];
+                gl.activeTexture(gl.TEXTURE0 + index);
+                gl.bindTexture(gl.TEXTURE_2D, texture.texture);
+                gl.uniform1i(this.GetUniformLocation(textureName), index);
             }
         }
     }
@@ -682,6 +696,7 @@ class MeshRender
 {
     private _gl: WebGLRenderingContext;
     private _verticesBuff: WebGLBuffer;
+    private _uv0Buff: WebGLBuffer;
     private _trianglesBuff: WebGLBuffer;
     
     mesh : Mesh;
@@ -700,6 +715,10 @@ class MeshRender
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector3Array2Float32Array(this.mesh.vertices), this._gl.STATIC_DRAW);
         
+        this._uv0Buff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._uv0Buff);
+        this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector2Array2Float32Array(this.mesh.uv), this._gl.STATIC_DRAW);
+        
         this._trianglesBuff = this._gl.createBuffer();
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
         this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, Utils.ConvertNumberArray2Uint16Array(this.mesh.triangles), this._gl.STATIC_DRAW);
@@ -710,13 +729,15 @@ class MeshRender
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
         
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._uv0Buff);
+        this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbUV"), 2, this._gl.FLOAT, false, 0, 0);
+        
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);
         
         this.material.SetUniformMatrix4fv("uModelMatrix", this.transform.GetModelMatrix());
         this.material.SetUniformMatrix4fv("uViewMatrix", this.camera.GetViewMatrix());
         this.material.SetUniformMatrix4fv("uProjectMatrix", this.camera.GetProjectMatrix());
-        
-        
+        this.material.UseTextures();
         
         this._gl.drawElements(this._gl.TRIANGLES, this.mesh.triangles.length, this._gl.UNSIGNED_SHORT, 0);
     }

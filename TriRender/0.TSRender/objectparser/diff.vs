@@ -10,14 +10,11 @@ uniform mat4 uProjectMatrix;
 uniform mat4 uNormalMatrix;
 
 varying vec4 vColor;
+varying vec2 vUV0;
 
 void main(void) {
     gl_Position = uProjectMatrix * uViewMatrix * uModelMatrix * vec4(atbPosition, 1.0);
-    
-    /*
-    vec3 normal = uNormalMatrix * (atbNormal, 1.0).xyz;
-    //dot(normal
-    */
-    
+    vec3 normal = (uNormalMatrix * vec4(atbNormal, 1.0)).xyz;
+    vUV0 = atbUV;
     vColor = vec4(1,0,0,1);
 }
