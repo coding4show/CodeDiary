@@ -542,11 +542,6 @@ class Material {
         this._gl.uniform4f(uniformLocation, x, y, z, w);
     }
     
-    SetUniformTexture(name: string, texture: Texture){
-        var uniformLocation = this.GetUniformLocation(name);
-        //this._gl.uniform1i(uniformLocation, texture);
-    }
-    
     private CreateVertexShader(str: string) : WebGLShader
 	{
 		var shader = this._gl.createShader(this._gl.VERTEX_SHADER);
@@ -608,6 +603,7 @@ class Mesh
 {
     vertices : Vector3[];
     uv : Vector2[];
+    normals : Vector3[];
     colors : Color[];
     triangles : number[];
     
@@ -696,6 +692,7 @@ class MeshRender
 {
     private _gl: WebGLRenderingContext;
     private _verticesBuff: WebGLBuffer;
+    private _normalsBuff: WebGLBuffer;
     private _uv0Buff: WebGLBuffer;
     private _trianglesBuff: WebGLBuffer;
     
@@ -715,6 +712,10 @@ class MeshRender
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector3Array2Float32Array(this.mesh.vertices), this._gl.STATIC_DRAW);
         
+        this._normalsBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._normalsBuff);
+        this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector3Array2Float32Array(this.mesh.normals), this._gl.STATIC_DRAW);
+        
         this._uv0Buff = this._gl.createBuffer();
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._uv0Buff);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector2Array2Float32Array(this.mesh.uv), this._gl.STATIC_DRAW);
@@ -728,6 +729,9 @@ class MeshRender
     {
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
+        
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
+        this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbNormal"), 3, this._gl.FLOAT, false, 0, 0);
         
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._uv0Buff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbUV"), 2, this._gl.FLOAT, false, 0, 0);

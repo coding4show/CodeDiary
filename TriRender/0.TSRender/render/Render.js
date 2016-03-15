@@ -580,10 +580,6 @@ var Material = (function () {
         var uniformLocation = this.GetUniformLocation(name);
         this._gl.uniform4f(uniformLocation, x, y, z, w);
     };
-    Material.prototype.SetUniformTexture = function (name, texture) {
-        var uniformLocation = this.GetUniformLocation(name);
-        //this._gl.uniform1i(uniformLocation, texture);
-    };
     Material.prototype.CreateVertexShader = function (str) {
         var shader = this._gl.createShader(this._gl.VERTEX_SHADER);
         if (this.CompileShader(shader, str)) {
@@ -699,6 +695,9 @@ var MeshRender = (function () {
         this._verticesBuff = this._gl.createBuffer();
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector3Array2Float32Array(this.mesh.vertices), this._gl.STATIC_DRAW);
+        this._normalsBuff = this._gl.createBuffer();
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._normalsBuff);
+        this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector3Array2Float32Array(this.mesh.normals), this._gl.STATIC_DRAW);
         this._uv0Buff = this._gl.createBuffer();
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._uv0Buff);
         this._gl.bufferData(this._gl.ARRAY_BUFFER, Utils.ConvertVector2Array2Float32Array(this.mesh.uv), this._gl.STATIC_DRAW);
@@ -709,6 +708,8 @@ var MeshRender = (function () {
     MeshRender.prototype.Draw = function () {
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbPosition"), 3, this._gl.FLOAT, false, 0, 0);
+        this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._verticesBuff);
+        this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbNormal"), 3, this._gl.FLOAT, false, 0, 0);
         this._gl.bindBuffer(this._gl.ARRAY_BUFFER, this._uv0Buff);
         this._gl.vertexAttribPointer(this.material.GetAttribLocation("atbUV"), 2, this._gl.FLOAT, false, 0, 0);
         this._gl.bindBuffer(this._gl.ELEMENT_ARRAY_BUFFER, this._trianglesBuff);

@@ -99,6 +99,7 @@ var ObjectParser = (function () {
         mesh.vertices = this.vertices;
         mesh.uv = this.uvs;
         mesh.triangles = this.triangles;
+        mesh.normals = this.normals;
         return mesh;
     };
     return ObjectParser;
