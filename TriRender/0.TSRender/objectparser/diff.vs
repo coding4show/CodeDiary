@@ -15,7 +15,7 @@ varying vec3 vNormal;
 
 void main(void) {
     gl_Position = uProjectMatrix * uViewMatrix * uModelMatrix * vec4(atbPosition, 1.0);
-    vNormal = (uNormalMatrix * vec4(atbNormal, 1.0)).xyz;
+    vNormal = normalize((uNormalMatrix * vec4(atbNormal, 1.0)).xyz);
     vUV0 = atbUV;
     vColor = vec4(1,0,0,1);
 }

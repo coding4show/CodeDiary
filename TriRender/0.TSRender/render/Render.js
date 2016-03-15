@@ -503,6 +503,11 @@ var Transform = (function () {
     Transform.prototype.GetModelMatrix = function () {
         return Matrix4x4.TRS(this.position, this.rotation, this.scale);
     };
+    Transform.prototype.GetNormalMatrix = function () {
+        var reversScale = new Vector3(1 / this.scale.x, 1 / this.scale.y, 1 / this.scale.z);
+        reversScale.Normalize();
+        return Matrix4x4.MultiplyMatrix4x4(Matrix4x4.RotationFromEuler(this.rotation), Matrix4x4.Scale(reversScale));
+    };
     return Transform;
 })();
 /**
@@ -716,6 +721,7 @@ var MeshRender = (function () {
         this.material.SetUniformMatrix4fv("uModelMatrix", this.transform.GetModelMatrix());
         this.material.SetUniformMatrix4fv("uViewMatrix", this.camera.GetViewMatrix());
         this.material.SetUniformMatrix4fv("uProjectMatrix", this.camera.GetProjectMatrix());
+        this.material.SetUniformMatrix4fv("uNormalMatrix", this.transform.GetNormalMatrix());
         this.material.UseTextures();
         this._gl.drawElements(this._gl.TRIANGLES, this.mesh.triangles.length, this._gl.UNSIGNED_SHORT, 0);
     };
