@@ -31,10 +31,10 @@
             camera.aspect = 1;
             camera.fov = 90;
             camera.near = 0.1;
-            camera.far = 12;
+            camera.far = 120;
             
-            camera.eye = new Vector3(-1, 1, -1 );
-            camera.target = new Vector3(0, 0, 1);
+            camera.eye = new Vector3(0, 4, -4 );
+            camera.target = new Vector3(0, 4, 1);
             camera.top = new Vector3(0, 1, 0);
             
             var transform = new Transform();
@@ -90,12 +90,12 @@
             });
             
             var objLoader = new FileLoader();
-            objLoader.Load("monkey.obj", function(objtext){
+            objLoader.Load("boy.obj", function(objtext){
                 mep.Ready("obj", objtext);
             });
             
             var image = new Image();
-            image.src = "tex_land.png";
+            image.src = "tex_boy.png";
             image.onload = function(){
                 mep.Ready("image", image);
             }
