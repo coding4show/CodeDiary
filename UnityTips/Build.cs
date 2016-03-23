@@ -7,10 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 
-/**
-* 打包脚本的命令行接口
-*/
-
 public class Build {
 	
 	#region CommandLine Interface
@@ -62,6 +58,9 @@ public class Build {
 			options |= BuildOptions.AcceptExternalModificationsToPlayer;
 		}
 		
+		// version
+		PlayerSettings.bundleVersion = ThroneBuild.GAME_VERSION;
+		
 		DirectoryInfo di = new DirectoryInfo(Application.dataPath);
 		string projPath = Path.Combine(di.Parent.Parent.FullName, "proj_ios");
 		
@@ -84,6 +83,9 @@ public class Build {
 		
 		// subtarget
 		EditorUserBuildSettings.androidBuildSubtarget = MobileTextureSubtarget.ETC;
+		
+		// version
+		PlayerSettings.bundleVersion = ThroneBuild.GAME_VERSION;
 		
 		DirectoryInfo di = new DirectoryInfo(Application.dataPath);
 		string apkPath = Path.Combine(di.Parent.Parent.FullName, "throne_" + (debug ? "debug" : "release") + ".apk");
