@@ -1,0 +1,5 @@
+/Users/linn/work/github/CodeDiary/Practice/SocketClient/SocketClient/obj/x86/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/Users/linn/work/github/CodeDiary/Practice/SocketClient/SocketClient/bin/Debug/SocketClient.exe.mdb
+/Users/linn/work/github/CodeDiary/Practice/SocketClient/SocketClient/bin/Debug/SocketClient.exe
+/Users/linn/work/github/CodeDiary/Practice/SocketClient/SocketClient/obj/x86/Debug/SocketClient.exe
+/Users/linn/work/github/CodeDiary/Practice/SocketClient/SocketClient/obj/x86/Debug/SocketClient.exe.mdb
