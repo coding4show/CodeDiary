@@ -45,7 +45,16 @@ public abstract class AbstractGame
 	public abstract void Input(AbstractGameInput input);
 
 	/// <summary>
-	/// 游戏系统的行为输出
+	/// Update
+	/// 实时的游戏需要每帧Update
+	/// 回合的游戏逻辑层只要在输入, 超时等时机Update
+	/// </summary>
+	public abstract void Update();
+
+	/// <summary>
+	/// 游戏系统的行为输出;
+	/// 游戏的行为输出主要给表现层用作显示
+	/// 但是有的行为本身就是表现层的输入造成的, 不需要重复表现
 	/// </summary>
 	public System.Action<AbstractGameAction> OnGameAction;
 }
