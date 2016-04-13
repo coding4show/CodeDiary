@@ -3,8 +3,10 @@
         "target": "ES5"
     },
     "files": [
-        "render/WebGL.d.ts",
         "render/Math.ts",
-        "render/Render.ts"
+        "render/Render.ts",
+        "utils/MultiEventProxy.ts",
+        "objectparser/ObjectParser.ts",
+        "book/Book.ts"
     ]
 }
