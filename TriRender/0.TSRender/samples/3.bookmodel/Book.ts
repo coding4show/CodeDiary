@@ -1,4 +1,9 @@
-/// <reference path="../render/Render.ts" />
+/// <reference path="../../render/Math.ts" />
+/// <reference path="../../render/Mesh.ts" />
+/// <reference path="../../render/Material.ts" />
+/// <reference path="../../render/MeshRender.ts" />
+/// <reference path="../../render/WireFrameMeshRender.ts" />
+/// <reference path="../../render/Render.ts" />
 
 /**
  * Book.ts

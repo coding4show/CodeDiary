@@ -2,28 +2,18 @@
 <html>
 
 <head>
-	<script type="text/javascript" src="../render/Render.js"></script>
-    <script type="text/javascript" src="../utils/MultiEventProxy.js"></script>
-    <script type="text/javascript" src="../objectparser/ObjectParser.js"></script>
+	<script type="text/javascript" src="../../render/Render.js"></script>
 	<script type="text/javascript">
     
         function Draw(params){
             var vs = params["vs"];
             var fs = params["fs"];
             var gl = params["gl"];
-            var objtext = params["obj"];
-            var image = params["image"];
-            
-            var texture = new Texture(gl);
-            texture.Load(image);
             
             var mat = new Material(gl);
             mat.Load(vs, fs);
-            mat.Register("uSampler", texture);
             
-            //var mesh = Mesh.CreateBox();
-            var objParser = new ObjectParser();
-            var mesh = objParser.Parse(objtext);
+            var mesh = Mesh.CreateBox();
             
             var camera = new Camera();
             
@@ -39,15 +29,13 @@
             
             var transform = new Transform();
             
-            var render = new MeshRender(gl);
-            //var render = new WireFrameMeshRender(gl);
+            //var render = new MeshRender(gl);
+            var render = new WireFrameMeshRender(gl);
             render.mesh = mesh;
             render.camera = camera;
             render.material = mat;
             render.transform = transform;
             render.LoadMesh();
-            
-            
             
             var f = 0;
             
@@ -74,7 +62,7 @@
 			var canvas = document.getElementById("c");
             Context.InitGL(canvas);
             
-            var mep = new MultiEventProxy(["vs", "fs", "obj", "image"], function(results){
+            var mep = new MultiEventProxy(["vs", "fs"], function(results){
                 results["gl"] = Context.gl;
                 Draw(results);
             });
@@ -88,17 +76,6 @@
             fsLoader.Load("diff.fs", function(fstext){
                 mep.Ready("fs", fstext);
             });
-            
-            var objLoader = new FileLoader();
-            objLoader.Load("boy.obj", function(objtext){
-                mep.Ready("obj", objtext);
-            });
-            
-            var image = new Image();
-            image.src = "tex_boy.png";
-            image.onload = function(){
-                mep.Ready("image", image);
-            }
 		}
 	</script>
 </head>
